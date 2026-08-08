@@ -15,5 +15,6 @@ data class User(
     val displayName: String = "",
     val phoneNumber: String = "",
     val photoUrl: String? = null,
+    val rewardBalance: Int = 0,
     val createdAt: Long = System.currentTimeMillis()
 )

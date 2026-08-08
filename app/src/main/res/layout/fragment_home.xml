@@ -63,6 +63,23 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:tint="?attr/colorOnSurface" />
 
+                <TextView
+                    android:id="@+id/tvNotificationBadge"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_circle"
+                    android:backgroundTint="?attr/colorPrimary"
+                    android:gravity="center"
+                    android:text="1"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textSize="10sp"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="@id/btnNotifications"
+                    app:layout_constraintTop_toTopOf="@id/btnNotifications"
+                    tools:visibility="visible" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Greeting text -->
@@ -160,6 +177,33 @@
                 app:layout_constraintTop_toBottomOf="@id/tvCategoriesTitle"
                 tools:listitem="@layout/item_category" />
 
+            <!-- Recommended Section Header -->
+            <TextView
+                android:id="@+id/tvRecommendedTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:text="Recommended for You"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/rvCategories" />
+
+            <!-- Recommended Section -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRecommended"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintTop_toBottomOf="@id/tvRecommendedTitle"
+                tools:listitem="@layout/item_trending_food" />
+
             <!-- Trending Section Header -->
             <TextView
                 android:id="@+id/tvTrendingTitle"
@@ -172,7 +216,7 @@
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/rvCategories" />
+                app:layout_constraintTop_toBottomOf="@id/rvRecommended" />
 
             <!-- Trending Section -->
             <androidx.recyclerview.widget.RecyclerView

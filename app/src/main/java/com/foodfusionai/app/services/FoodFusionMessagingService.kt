@@ -22,23 +22,28 @@ class FoodFusionMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
         
-        val orderId = message.data["orderId"]
+        val type = message.data["type"]
+        val targetId = message.data["targetId"] // Could be orderId, couponId, restaurantId
         
         message.notification?.let {
-            showNotification(it.title, it.body, orderId)
+            showNotification(it.title, it.body, type, targetId)
         }
     }
 
-    private fun showNotification(title: String?, body: String?, orderId: String?) {
+    private fun showNotification(title: String?, body: String?, type: String?, targetId: String?) {
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         
-        if (orderId != null) {
-            intent.putExtra("deep_link_order_id", orderId)
+        if (type != null && targetId != null) {
+            intent.putExtra("deep_link_type", type)
+            intent.putExtra("deep_link_target_id", targetId)
+        } else if (targetId != null) {
+            // Fallback for older notifications that just sent orderId
+            intent.putExtra("deep_link_order_id", targetId)
         }
         
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
+            this, (System.currentTimeMillis() % 10000).toInt(), intent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 

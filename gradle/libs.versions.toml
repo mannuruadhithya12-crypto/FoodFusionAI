@@ -24,6 +24,7 @@ junit = "4.13.2"
 junitExt = "1.2.1"
 espresso = "3.6.1"
 googleServices = "4.5.0"
+playServicesLocation = "21.3.0"
 
 [libraries]
 # Kotlin & Coroutines
@@ -69,6 +70,9 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 firebase-functions = { group = "com.google.firebase", name = "firebase-functions" }
+
+# Location
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 # 3rd Party
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }

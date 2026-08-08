@@ -85,6 +85,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
                         binding.tvDisplayName.text = user.displayName.ifEmpty { "User" }
                         binding.tvEmail.text = user.email
                         binding.tvPhone.text = user.phoneNumber.ifEmpty { "No phone number added" }
+                        binding.tvRewardBalance.text = "Rewards: ${user.rewardBalance} pts"
                     }
                     
                     state.error?.let { error ->

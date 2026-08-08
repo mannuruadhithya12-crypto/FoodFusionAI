@@ -80,6 +80,16 @@
                         android:textColor="?android:textColorSecondary"
                         tools:text="+91 9876543210" />
 
+                    <TextView
+                        android:id="@+id/tvRewardBalance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        tools:text="Rewards: 150 pts" />
+
                 </LinearLayout>
 
                 <ImageButton

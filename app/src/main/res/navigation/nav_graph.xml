@@ -4,6 +4,11 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment">
 
+    <!-- Global Actions for Notifications -->
+    <action
+        android:id="@+id/action_global_orderDetailsFragment"
+        app:destination="@id/orderDetailsFragment" />
+        
     <!-- Auth Section -->
     <fragment
         android:id="@+id/loginFragment"
@@ -264,6 +269,15 @@
         <action
             android:id="@+id/action_orderDetailsFragment_to_writeReviewFragment"
             app:destination="@id/writeReviewFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.foodfusionai.app.ui.notifications.NotificationsFragment"
+        android:label="Notifications">
+        <action
+            android:id="@+id/action_notificationsFragment_to_orderDetailsFragment"
+            app:destination="@id/orderDetailsFragment" />
     </fragment>
 
 </navigation>

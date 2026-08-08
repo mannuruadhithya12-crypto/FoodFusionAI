@@ -79,6 +79,9 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.bundles.firebase)
 
+    // Location
+    implementation(libs.play.services.location)
+
     // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.bundles.testing)

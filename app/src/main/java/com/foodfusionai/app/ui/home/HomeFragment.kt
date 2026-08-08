@@ -25,12 +25,32 @@ import kotlinx.coroutines.launch
  */
 class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
-    private val viewModel: HomeViewModel by viewModels { HomeViewModel.Factory() }
+    private val viewModel: HomeViewModel by viewModels { 
+        HomeViewModel.Factory(
+            locationRepository = com.foodfusionai.app.data.repository.LocationRepositoryImpl(requireContext()),
+            recommendationRepository = com.foodfusionai.app.data.repository.RecommendationRepositoryImpl()
+        ) 
+    }
 
     private lateinit var bannerAdapter: BannerAdapter
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var trendingAdapter: FoodAdapter
+    private lateinit var recommendedAdapter: com.foodfusionai.app.ui.home.adapters.RecommendationAdapter
     private lateinit var restaurantAdapter: RestaurantAdapter
+
+    private val locationPermissionRequest = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        when {
+            permissions.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false) ||
+            permissions.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                viewModel.fetchCurrentLocation()
+            }
+            else -> {
+                requireContext().showToast("Location permission denied. Please select address manually.")
+            }
+        }
+    }
 
     override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?) =
         FragmentHomeBinding.inflate(inflater, container, false)
@@ -63,6 +83,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         }
         binding.rvCategories.adapter = categoryAdapter
 
+        recommendedAdapter = com.foodfusionai.app.ui.home.adapters.RecommendationAdapter { item ->
+            context?.showToast("Recommended Selected: ${item.food.name}")
+        }
+        binding.rvRecommended.adapter = recommendedAdapter
+
         trendingAdapter = FoodAdapter { food ->
             context?.showToast("Food Selected: ${food.name}")
         }
@@ -82,12 +107,30 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
         // Notification entry point click
         binding.btnNotifications.setOnClickListener {
-            context?.showToast("Notifications placeholder tapped")
+            navigateTo(R.id.notificationsFragment)
         }
 
         // Address entry point click
         binding.tvAddress.setOnClickListener {
-            context?.showToast("Address management placeholder tapped")
+            // Check permissions before fetching location
+            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
+                androidx.core.content.ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                viewModel.fetchCurrentLocation()
+            } else {
+                locationPermissionRequest.launch(
+                    arrayOf(
+                        android.Manifest.permission.ACCESS_FINE_LOCATION,
+                        android.Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            }
         }
 
         // Retry on error state
@@ -128,12 +171,25 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         }
 
         // Set Address
-        binding.tvAddress.text = "Saved Address"
+        if (state.currentLocationAddress != null) {
+            binding.tvAddress.text = state.currentLocationAddress
+        } else {
+            binding.tvAddress.text = "Saved Address"
+        }
 
         // Submit lists to Adapters
         bannerAdapter.submitList(state.banners)
         categoryAdapter.submitList(state.categories)
+        recommendedAdapter.submitList(state.recommendedFoods)
         trendingAdapter.submitList(state.trendingFoods)
         restaurantAdapter.submitList(state.restaurants)
+
+        // Notification badge
+        if (state.unreadNotificationCount > 0) {
+            binding.tvNotificationBadge.show()
+            binding.tvNotificationBadge.text = if (state.unreadNotificationCount > 99) "99+" else state.unreadNotificationCount.toString()
+        } else {
+            binding.tvNotificationBadge.hide()
+        }
     }
 }

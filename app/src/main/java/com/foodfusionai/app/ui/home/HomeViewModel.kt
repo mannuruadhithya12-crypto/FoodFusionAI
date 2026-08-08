@@ -12,6 +12,10 @@ import com.foodfusionai.app.data.repository.AuthRepository
 import com.foodfusionai.app.data.repository.AuthRepositoryImpl
 import com.foodfusionai.app.data.repository.HomeRepository
 import com.foodfusionai.app.data.repository.HomeRepositoryImpl
+import com.foodfusionai.app.data.repository.LocationRepository
+import com.foodfusionai.app.data.repository.LocationRepositoryImpl
+import com.foodfusionai.app.data.repository.NotificationRepository
+import com.foodfusionai.app.data.repository.NotificationRepositoryImpl
 import com.foodfusionai.app.utils.Resource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,8 +34,10 @@ data class HomeUiState(
     val categories: List<Category> = emptyList(),
     val restaurants: List<Restaurant> = emptyList(),
     val trendingFoods: List<Food> = emptyList(),
-    val recommendedFoods: List<Food> = emptyList(),
-    val topRatedRestaurants: List<Restaurant> = emptyList()
+    val recommendedFoods: List<com.foodfusionai.app.data.models.RecommendationItem> = emptyList(),
+    val topRatedRestaurants: List<Restaurant> = emptyList(),
+    val unreadNotificationCount: Int = 0,
+    val currentLocationAddress: String? = null
 )
 
 /**
@@ -41,6 +47,9 @@ data class HomeUiState(
 class HomeViewModel(
     private val homeRepository: HomeRepository,
     private val authRepository: AuthRepository,
+    private val notificationRepository: NotificationRepository,
+    private val locationRepository: LocationRepository,
+    private val recommendationRepository: com.foodfusionai.app.data.repository.RecommendationRepository,
     private val coroutineScope: kotlinx.coroutines.CoroutineScope? = null
 ) : ViewModel() {
 
@@ -50,7 +59,32 @@ class HomeViewModel(
 
     init {
         observeCurrentUser()
+        observeNotifications()
         loadHomeData()
+    }
+
+    fun fetchCurrentLocation() {
+        scope.launch {
+            val locationRes = locationRepository.getCurrentLocation()
+            if (locationRes is Resource.Success) {
+                val coords = locationRes.data!!
+                val addressRes = locationRepository.getAddressFromCoordinates(coords.first, coords.second)
+                if (addressRes is Resource.Success) {
+                    _uiState.update { it.copy(currentLocationAddress = addressRes.data) }
+                }
+            }
+        }
+    }
+
+    private fun observeNotifications() {
+        scope.launch {
+            notificationRepository.observeNotifications().collect { resource ->
+                if (resource is Resource.Success) {
+                    val count = resource.data?.count { !it.isRead } ?: 0
+                    _uiState.update { it.copy(unreadNotificationCount = count) }
+                }
+            }
+        }
     }
 
     private fun observeCurrentUser() {
@@ -70,6 +104,7 @@ class HomeViewModel(
             val categoriesResult = homeRepository.getCategories()
             val restaurantsResult = homeRepository.getRestaurants()
             val foodsResult = homeRepository.getTrendingFoods()
+            val recommendationsResult = recommendationRepository.getPersonalizedRecommendations()
 
             val hasError = bannersResult is Resource.Error ||
                     categoriesResult is Resource.Error ||
@@ -94,9 +129,7 @@ class HomeViewModel(
             val categories = (categoriesResult as? Resource.Success)?.data ?: emptyList()
             val restaurants = (restaurantsResult as? Resource.Success)?.data ?: emptyList()
             val foods = (foodsResult as? Resource.Success)?.data ?: emptyList()
-
-            // Recommended items (basic sorting/ranking: popular items first)
-            val recommended = foods.sortedByDescending { it.rating }
+            val recommended = (recommendationsResult as? Resource.Success)?.data ?: emptyList()
 
             // Top rated restaurants (rating >= 4.5)
             val topRated = restaurants.filter { it.rating >= 4.5 }.sortedByDescending { it.rating }
@@ -121,12 +154,15 @@ class HomeViewModel(
      */
     class Factory(
         private val homeRepository: HomeRepository = HomeRepositoryImpl(),
-        private val authRepository: AuthRepository = AuthRepositoryImpl()
+        private val authRepository: AuthRepository = AuthRepositoryImpl(),
+        private val notificationRepository: NotificationRepository = NotificationRepositoryImpl(),
+        private val locationRepository: LocationRepository,
+        private val recommendationRepository: com.foodfusionai.app.data.repository.RecommendationRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
-                return HomeViewModel(homeRepository, authRepository) as T
+                return HomeViewModel(homeRepository, authRepository, notificationRepository, locationRepository, recommendationRepository) as T
             }
             throw IllegalArgumentException("Unknown ViewModel class")
         }

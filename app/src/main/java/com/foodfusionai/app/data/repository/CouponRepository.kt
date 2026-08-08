@@ -9,9 +9,9 @@ import com.foodfusionai.app.utils.Resource
 interface CouponRepository {
 
     /**
-     * Checks if a coupon code is valid.
+     * Checks if a coupon code is valid via backend validation.
      */
-    suspend fun validateCoupon(code: String): Resource<Coupon?>
+    suspend fun validateCoupon(code: String, cartTotal: Double): Resource<Coupon?>
 
     /**
      * Obtains list of all available coupons.

@@ -89,7 +89,8 @@ class CheckoutViewModel(
 
         scope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val res = couponRepository.validateCoupon(code)
+            val subtotal = _uiState.value.subtotal
+            val res = couponRepository.validateCoupon(code, subtotal)
 
             if (res is Resource.Success && res.data != null) {
                 val coupon = res.data

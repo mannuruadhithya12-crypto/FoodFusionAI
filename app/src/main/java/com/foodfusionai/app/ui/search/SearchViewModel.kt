@@ -229,7 +229,10 @@ class SearchViewModel(
             val deliveryMinutes = parseDeliveryTime(rest.deliveryTime)
             val matchesDelivery = filters.maxDeliveryTimeMinutes == null || deliveryMinutes <= filters.maxDeliveryTimeMinutes
 
-            matchesSearch && matchesCategory && matchesRating && matchesDelivery
+            // Open Now filter
+            val matchesOpenNow = filters.isOpenNow == null || filters.isOpenNow == false || rest.isOpen == true
+
+            matchesSearch && matchesCategory && matchesRating && matchesDelivery && matchesOpenNow
         }
 
         // 3. Sort Foods

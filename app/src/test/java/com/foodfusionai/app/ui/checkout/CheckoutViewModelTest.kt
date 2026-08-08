@@ -169,7 +169,7 @@ class CheckoutViewModelTest {
         var mockCoupon: Coupon? = Coupon(
             "coupon_1", "FOOD20", "20% OFF", 20.0, 200.0, 500.0, 0L, true
         )
-        override suspend fun validateCoupon(code: String): Resource<Coupon?> {
+        override suspend fun validateCoupon(code: String, cartTotal: Double): Resource<Coupon?> {
             return if (code == mockCoupon?.code) {
                 Resource.Success(mockCoupon)
             } else {

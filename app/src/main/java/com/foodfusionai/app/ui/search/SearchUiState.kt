@@ -12,7 +12,8 @@ data class SearchFilters(
     val maxPrice: Double? = null,
     val minRating: Double? = null,
     val isVegetarian: Boolean? = null,
-    val maxDeliveryTimeMinutes: Int? = null
+    val maxDeliveryTimeMinutes: Int? = null,
+    val isOpenNow: Boolean? = null
 )
 
 /**

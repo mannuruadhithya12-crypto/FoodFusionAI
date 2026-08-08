@@ -83,6 +83,24 @@
                         android:textAppearance="?attr/textAppearanceTitleMedium"
                         android:textStyle="bold"
                         android:layout_marginBottom="8dp"/>
+
+                    <!-- Visual Progress Indicator -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp"
+                        android:weightSum="4">
+                        
+                        <!-- Step 1: Placed -->
+                        <View android:id="@+id/stepPlaced" android:layout_width="0dp" android:layout_height="4dp" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="?attr/colorPrimary" />
+                        <!-- Step 2: Accepted -->
+                        <View android:id="@+id/stepAccepted" android:layout_width="0dp" android:layout_height="4dp" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="?attr/colorOutlineVariant" />
+                        <!-- Step 3: Preparing -->
+                        <View android:id="@+id/stepPreparing" android:layout_width="0dp" android:layout_height="4dp" android:layout_weight="1" android:layout_marginEnd="4dp" android:background="?attr/colorOutlineVariant" />
+                        <!-- Step 4: Out for Delivery/Delivered -->
+                        <View android:id="@+id/stepDelivered" android:layout_width="0dp" android:layout_height="4dp" android:layout_weight="1" android:background="?attr/colorOutlineVariant" />
+                    </LinearLayout>
                         
                     <TextView
                         android:id="@+id/tvETA"

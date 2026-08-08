@@ -15,11 +15,14 @@ class RazorpayPaymentAdapter(
         onProcessing()
 
         return try {
-            val data = hashMapOf(
+            val data = hashMapOf<String, Any>(
                 "amount" to request.amount,
                 "currency" to request.currency,
                 "checkoutReference" to request.referenceId
             )
+            
+            request.couponId?.let { data["couponId"] = it }
+            request.cartTotal?.let { data["cartTotal"] = it }
 
             // Call the Firebase Function
             val result = functions

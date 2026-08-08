@@ -306,6 +306,11 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>() {
             45 -> dialogBinding.chipDelivery45.isChecked = true
         }
 
+        // 6. Pre-select Open Now
+        if (filters.isOpenNow == true) {
+            dialogBinding.chipOpenNow.isChecked = true
+        }
+
         dialogBinding.btnReset.setOnClickListener {
             viewModel.resetFilters()
             bottomSheet.dismiss()
@@ -352,12 +357,16 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>() {
                 else -> null
             }
 
+            // Read Open Now
+            val isOpenNow = if (dialogBinding.chipOpenNow.isChecked) true else null
+
             val newFilters = SearchFilters(
                 category = category,
                 maxPrice = maxPrice,
                 minRating = minRating,
                 isVegetarian = isVeg,
-                maxDeliveryTimeMinutes = maxDelivery
+                maxDeliveryTimeMinutes = maxDelivery,
+                isOpenNow = isOpenNow
             )
             viewModel.applyFilters(newFilters)
             bottomSheet.dismiss()

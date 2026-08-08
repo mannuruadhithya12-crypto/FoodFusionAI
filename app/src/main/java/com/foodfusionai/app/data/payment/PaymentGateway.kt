@@ -6,7 +6,9 @@ data class PaymentRequest(
     val amount: Double,
     val currency: String = "INR",
     val paymentMethod: PaymentMethod,
-    val referenceId: String
+    val referenceId: String,
+    val couponId: String? = null,
+    val cartTotal: Double? = null
 )
 
 sealed class PaymentAction {

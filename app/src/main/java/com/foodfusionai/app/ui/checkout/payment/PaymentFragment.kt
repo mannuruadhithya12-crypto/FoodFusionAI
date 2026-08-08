@@ -114,7 +114,9 @@ class PaymentFragment : Fragment() {
         val request = PaymentRequest(
             amount = amountToProcess,
             paymentMethod = PaymentMethod.UPI,
-            referenceId = currentReferenceId!!
+            referenceId = currentReferenceId!!,
+            couponId = uiState.appliedCoupon?.id,
+            cartTotal = uiState.subtotal
         )
 
         paymentViewModel.startPaymentFlow(request, orderSnapshot)

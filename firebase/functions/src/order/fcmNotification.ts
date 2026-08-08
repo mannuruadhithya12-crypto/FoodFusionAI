@@ -37,39 +37,39 @@ export const onOrderStatusUpdated = functions.firestore
                 const userDoc = await transaction.get(db.collection("users").doc(userId));
                 const fcmToken = userDoc.data()?.fcmToken;
 
+                let title = "";
+                let body = "";
+
+                switch (afterStatus) {
+                    case "CONFIRMED":
+                        title = "Order Confirmed";
+                        body = "Your order has been confirmed.";
+                        break;
+                    case "PREPARING":
+                        title = "Preparing";
+                        body = "The restaurant has started preparing your food.";
+                        break;
+                    case "READY_FOR_PICKUP":
+                        title = "Ready";
+                        body = "Your order is ready for pickup.";
+                        break;
+                    case "OUT_FOR_DELIVERY":
+                        title = "Out for Delivery";
+                        body = "Your order is on the way.";
+                        break;
+                    case "DELIVERED":
+                        title = "Delivered";
+                        body = "Your order has been delivered.";
+                        break;
+                    case "CANCELLED":
+                        title = "Order Cancelled";
+                        body = "Your order has been cancelled.";
+                        break;
+                    default:
+                        return; // No notification for other statuses
+                }
+
                 if (fcmToken) {
-                    let title = "";
-                    let body = "";
-
-                    switch (afterStatus) {
-                        case "CONFIRMED":
-                            title = "Order Confirmed";
-                            body = "Your order has been confirmed.";
-                            break;
-                        case "PREPARING":
-                            title = "Preparing";
-                            body = "The restaurant has started preparing your food.";
-                            break;
-                        case "READY_FOR_PICKUP":
-                            title = "Ready";
-                            body = "Your order is ready for pickup.";
-                            break;
-                        case "OUT_FOR_DELIVERY":
-                            title = "Out for Delivery";
-                            body = "Your order is on the way.";
-                            break;
-                        case "DELIVERED":
-                            title = "Delivered";
-                            body = "Your order has been delivered.";
-                            break;
-                        case "CANCELLED":
-                            title = "Order Cancelled";
-                            body = "Your order has been cancelled.";
-                            break;
-                        default:
-                            return; // No notification for other statuses
-                    }
-
                     const message = {
                         notification: {
                             title: title,
@@ -77,7 +77,8 @@ export const onOrderStatusUpdated = functions.firestore
                         },
                         data: {
                             orderId: orderId,
-                            type: "ORDER_STATUS_UPDATE"
+                            type: "ORDER_UPDATE",
+                            targetId: orderId
                         },
                         token: fcmToken
                     };
@@ -86,12 +87,33 @@ export const onOrderStatusUpdated = functions.firestore
                     console.log(`Successfully sent FCM for order ${orderId} status ${afterStatus}`);
                 }
 
-                // Mark as processed
+                // Save full notification document
                 transaction.set(notifRef, {
-                    sentAt: admin.firestore.FieldValue.serverTimestamp(),
-                    orderId: orderId,
-                    status: afterStatus
+                    id: notifId,
+                    userId: userId,
+                    title: title,
+                    body: body,
+                    type: "ORDER_UPDATE",
+                    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                    isRead: false,
+                    data: {
+                        orderId: orderId,
+                        status: afterStatus
+                    }
                 });
+
+                // --- REWARDS LOGIC ---
+                if (afterStatus === "DELIVERED") {
+                    const totalAmount = afterData.totalAmount || 0;
+                    const earnedPoints = Math.floor(totalAmount / 100);
+                    if (earnedPoints > 0) {
+                        const userRef = db.collection("users").doc(userId);
+                        transaction.update(userRef, {
+                            rewardBalance: admin.firestore.FieldValue.increment(earnedPoints)
+                        });
+                        console.log(`Issued ${earnedPoints} reward points to user ${userId} for order ${orderId}`);
+                    }
+                }
             });
 
         } catch (error) {

@@ -1,24 +1,15 @@
 package com.foodfusionai.app.ui.home
 
-import com.foodfusionai.app.data.models.Category
-import com.foodfusionai.app.data.models.Food
-import com.foodfusionai.app.data.models.Offer
-import com.foodfusionai.app.data.models.Restaurant
-import com.foodfusionai.app.data.models.User
-import com.foodfusionai.app.data.repository.AuthRepository
-import com.foodfusionai.app.data.repository.HomeRepository
+import com.foodfusionai.app.data.models.*
+import com.foodfusionai.app.data.repository.*
 import com.foodfusionai.app.utils.Resource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
@@ -26,18 +17,23 @@ class HomeViewModelTest {
 
     private lateinit var mockHomeRepository: MockHomeRepository
     private lateinit var mockAuthRepository: MockAuthRepository
+    private lateinit var mockNotificationRepository: MockNotificationRepository
+    private lateinit var mockLocationRepository: MockLocationRepository
+    private lateinit var mockRecommendationRepository: MockRecommendationRepository
     private lateinit var viewModel: HomeViewModel
 
     @Before
     fun setUp() {
         mockHomeRepository = MockHomeRepository()
         mockAuthRepository = MockAuthRepository()
+        mockNotificationRepository = MockNotificationRepository()
+        mockLocationRepository = MockLocationRepository()
+        mockRecommendationRepository = MockRecommendationRepository()
     }
 
     @Test
     fun `test load home data success`() = runBlocking {
-        // Instantiate using Dispatchers.Unconfined to run launched coroutines immediately
-        viewModel = HomeViewModel(mockHomeRepository, mockAuthRepository, CoroutineScope(Dispatchers.Unconfined))
+        viewModel = HomeViewModel(mockHomeRepository, mockAuthRepository, mockNotificationRepository, mockLocationRepository, mockRecommendationRepository, CoroutineScope(Dispatchers.Unconfined))
 
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
@@ -47,8 +43,8 @@ class HomeViewModelTest {
         assertEquals(2, state.restaurants.size)
         assertEquals(2, state.trendingFoods.size)
         
-        // Recommended foods sorted descending by rating
-        assertEquals("f2", state.recommendedFoods.first().id) // rating 4.9 > 4.5
+        // Recommended foods
+        assertEquals("f1", state.recommendedFoods.first().food.id)
         
         // Top rated restaurants (rating >= 4.5)
         assertEquals(1, state.topRatedRestaurants.size)
@@ -58,7 +54,7 @@ class HomeViewModelTest {
     @Test
     fun `test load home data error`() = runBlocking {
         mockHomeRepository.shouldReturnError = true
-        viewModel = HomeViewModel(mockHomeRepository, mockAuthRepository, CoroutineScope(Dispatchers.Unconfined))
+        viewModel = HomeViewModel(mockHomeRepository, mockAuthRepository, mockNotificationRepository, mockLocationRepository, mockRecommendationRepository, CoroutineScope(Dispatchers.Unconfined))
 
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
@@ -71,7 +67,7 @@ class HomeViewModelTest {
         val mockUser = User("u123", "test@foodfusion.ai", "Chef Mario")
         mockAuthRepository.currentUserFlow.value = mockUser
 
-        viewModel = HomeViewModel(mockHomeRepository, mockAuthRepository, CoroutineScope(Dispatchers.Unconfined))
+        viewModel = HomeViewModel(mockHomeRepository, mockAuthRepository, mockNotificationRepository, mockLocationRepository, mockRecommendationRepository, CoroutineScope(Dispatchers.Unconfined))
 
         val state = viewModel.uiState.value
         assertNotNull(state.currentUser)
@@ -137,5 +133,24 @@ class HomeViewModelTest {
         override suspend fun register(name: String, email: String, phone: String, password: String): Resource<User> = Resource.Success(User())
         override suspend fun sendPasswordResetEmail(email: String): Resource<Unit> = Resource.Success(Unit)
         override suspend fun logout(): Resource<Unit> = Resource.Success(Unit)
+    }
+
+    class MockNotificationRepository : NotificationRepository {
+        override fun observeNotifications(): Flow<Resource<List<Notification>>> = emptyFlow()
+        override suspend fun markAsRead(notificationId: String): Resource<Unit> = Resource.Success(Unit)
+        override suspend fun markAllAsRead(): Resource<Unit> = Resource.Success(Unit)
+        override suspend fun deleteNotification(notificationId: String): Resource<Unit> = Resource.Success(Unit)
+    }
+
+    class MockLocationRepository : LocationRepository {
+        override suspend fun getCurrentLocation(): Resource<Pair<Double, Double>> = Resource.Success(Pair(0.0, 0.0))
+        override suspend fun getAddressFromCoordinates(latitude: Double, longitude: Double): Resource<String> = Resource.Success("123 Main St")
+    }
+
+    class MockRecommendationRepository : RecommendationRepository {
+        override suspend fun getPersonalizedRecommendations(forceRefresh: Boolean): Resource<List<RecommendationItem>> = Resource.Success(listOf(
+            RecommendationItem(Food("f1", "r1", "c1", "Pizza Margherita", rating = 4.5), RecommendationReason.POPULAR_IN_AREA),
+            RecommendationItem(Food("f2", "r1", "c1", "Pizza Pepperoni", rating = 4.9), RecommendationReason.TRENDING)
+        ))
     }
 }

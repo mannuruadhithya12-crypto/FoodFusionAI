@@ -7,6 +7,8 @@ data class Notification(
     val body: String = "",
     val type: String = "", // e.g. ORDER_UPDATE, PROMO, ALERT
     val timestamp: Long = System.currentTimeMillis(),
-    val isRead: Boolean = false,
+    @get:com.google.firebase.firestore.PropertyName("isRead")
+    @set:com.google.firebase.firestore.PropertyName("isRead")
+    var isRead: Boolean = false,
     val data: Map<String, String> = emptyMap()
 )

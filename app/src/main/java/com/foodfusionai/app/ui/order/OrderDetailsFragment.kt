@@ -139,9 +139,24 @@ class OrderDetailsFragment : Fragment() {
             } else {
                 binding.btnRateOrder.visibility = View.GONE
             }
+
+            // Visual Progress indicator
+            val colorPrimary = getThemeColor(com.google.android.material.R.attr.colorPrimary)
+            val colorOutline = getThemeColor(com.google.android.material.R.attr.colorOutlineVariant)
+
+            binding.stepPlaced.setBackgroundColor(colorPrimary) // Always placed
+            binding.stepAccepted.setBackgroundColor(if (order.orderStatus >= OrderStatus.CONFIRMED) colorPrimary else colorOutline)
+            binding.stepPreparing.setBackgroundColor(if (order.orderStatus >= OrderStatus.PREPARING) colorPrimary else colorOutline)
+            binding.stepDelivered.setBackgroundColor(if (order.orderStatus >= OrderStatus.OUT_FOR_DELIVERY) colorPrimary else colorOutline)
         } else {
             binding.svOrderDetails.visibility = View.GONE
         }
+    }
+
+    private fun getThemeColor(attrId: Int): Int {
+        val typedValue = android.util.TypedValue()
+        requireContext().theme.resolveAttribute(attrId, typedValue, true)
+        return typedValue.data
     }
 
     override fun onDestroyView() {
