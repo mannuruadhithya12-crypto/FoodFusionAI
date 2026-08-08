@@ -30,6 +30,15 @@ class CartRepositoryImpl(
         
         // Retrieve current items to check for matching duplicate food items and customizations
         val currentItems = dao.getAllCartItems().first()
+        
+        // Multi-restaurant conflict validation
+        val conflictingItem = currentItems.find { 
+            it.restaurantId.isNotEmpty() && item.restaurantId.isNotEmpty() && it.restaurantId != item.restaurantId 
+        }
+        if (conflictingItem != null) {
+            throw IllegalArgumentException("MULTI_RESTAURANT_CONFLICT")
+        }
+
         val existingItem = currentItems.find { 
             it.foodId == item.foodId && it.customizationsJson == item.customizationsJson 
         }

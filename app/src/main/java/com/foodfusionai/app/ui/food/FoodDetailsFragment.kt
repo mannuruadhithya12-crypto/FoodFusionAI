@@ -57,6 +57,13 @@ class FoodDetailsFragment : BaseFragment<FragmentFoodDetailsBinding>() {
                         }
                     }
                 }
+                launch {
+                    viewModel.cartConflictState.collect { item ->
+                        if (item != null) {
+                            showConflictDialog(item)
+                        }
+                    }
+                }
             }
         }
     }
@@ -143,5 +150,21 @@ class FoodDetailsFragment : BaseFragment<FragmentFoodDetailsBinding>() {
             binding.btnQtyMinus.isEnabled = false
             binding.btnQtyPlus.isEnabled = false
         }
+    }
+
+    private fun showConflictDialog(item: com.foodfusionai.app.data.local.room.entity.CartEntity) {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Replace Cart Items?")
+            .setMessage("Your cart contains items from another restaurant. Do you want to clear your cart and add this item instead?")
+            .setNegativeButton("Cancel") { _, _ ->
+                viewModel.resetConflictState()
+            }
+            .setPositiveButton("Clear Cart & Add") { _, _ ->
+                viewModel.addToCart(forceClear = true)
+            }
+            .setOnDismissListener {
+                viewModel.resetConflictState()
+            }
+            .show()
     }
 }

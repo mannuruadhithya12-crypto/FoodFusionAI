@@ -35,6 +35,9 @@ class FoodDetailsViewModel(
     private val _cartInsertionSuccess = MutableStateFlow<Boolean?>(null)
     val cartInsertionSuccess: StateFlow<Boolean?> = _cartInsertionSuccess.asStateFlow()
 
+    private val _cartConflictState = MutableStateFlow<CartEntity?>(null)
+    val cartConflictState: StateFlow<CartEntity?> = _cartConflictState.asStateFlow()
+
     /**
      * Loads food metadata and corresponding restaurant information.
      */
@@ -118,7 +121,7 @@ class FoodDetailsViewModel(
     /**
      * Saves the current product state as a CartEntity to local storage.
      */
-    fun addToCart() {
+    fun addToCart(forceClear: Boolean = false) {
         val food = _uiState.value.food ?: return
         val qty = _uiState.value.quantity
         val size = _uiState.value.selectedSize
@@ -139,17 +142,32 @@ class FoodDetailsViewModel(
             price = pricePerUnit,
             quantity = qty,
             imageUrl = food.imageUrl,
-            customizationsJson = customizations
+            customizationsJson = customizations,
+            restaurantId = food.restaurantId
         )
 
         scope.launch {
             try {
+                if (forceClear) {
+                    cartRepository.clearCart()
+                }
                 cartRepository.addToCart(item)
                 _cartInsertionSuccess.value = true
+                _cartConflictState.value = null
+            } catch (e: IllegalArgumentException) {
+                if (e.message == "MULTI_RESTAURANT_CONFLICT") {
+                    _cartConflictState.value = item
+                } else {
+                    _cartInsertionSuccess.value = false
+                }
             } catch (e: Throwable) {
                 _cartInsertionSuccess.value = false
             }
         }
+    }
+
+    fun resetConflictState() {
+        _cartConflictState.value = null
     }
 
     fun resetCartSuccess() {

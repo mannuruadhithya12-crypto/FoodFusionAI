@@ -18,7 +18,7 @@ import com.foodfusionai.app.data.local.room.entity.RecentSearchEntity
         RecentSearchEntity::class,
         CachedFoodEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class FoodFusionDatabase : RoomDatabase() {
@@ -31,6 +31,12 @@ abstract class FoodFusionDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: FoodFusionDatabase? = null
 
+        val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE cart_items ADD COLUMN restaurantId TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getDatabase(context: android.content.Context): FoodFusionDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = androidx.room.Room.databaseBuilder(
@@ -38,6 +44,7 @@ abstract class FoodFusionDatabase : RoomDatabase() {
                     FoodFusionDatabase::class.java,
                     "food_fusion_database"
                 )
+                .addMigrations(MIGRATION_1_2)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

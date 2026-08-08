@@ -207,6 +207,7 @@ class FoodDetailsViewModelTest {
         assertEquals(279.0, item.price, 0.0)
         assertEquals(2, item.quantity)
         assertEquals("Size: Large, Spice: Hot", item.customizationsJson)
+        assertEquals("r1", item.restaurantId)
     }
 
     @Test
