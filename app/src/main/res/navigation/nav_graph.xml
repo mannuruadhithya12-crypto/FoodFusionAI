@@ -75,12 +75,47 @@
     <fragment
         android:id="@+id/checkoutFragment"
         android:name="com.foodfusionai.app.ui.checkout.CheckoutFragment"
-        android:label="Checkout" />
+        android:label="Checkout">
+        <action
+            android:id="@+id/action_checkoutFragment_to_paymentFragment"
+            app:destination="@id/paymentFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/paymentFragment"
+        android:name="com.foodfusionai.app.ui.checkout.payment.PaymentFragment"
+        android:label="Payment">
+        <action
+            android:id="@+id/action_paymentFragment_to_orderConfirmationFragment"
+            app:destination="@id/orderConfirmationFragment"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="false" />
+    </fragment>
+    
+    <fragment
+        android:id="@+id/orderConfirmationFragment"
+        android:name="com.foodfusionai.app.ui.order.OrderConfirmationFragment"
+        android:label="Order Confirmed">
+        <action
+            android:id="@+id/action_orderConfirmationFragment_to_homeFragment"
+            app:destination="@id/nav_home"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_orderConfirmationFragment_to_ordersFragment"
+            app:destination="@id/nav_orders"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="false" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_orders"
         android:name="com.foodfusionai.app.ui.orders.OrdersFragment"
-        android:label="Orders" />
+        android:label="Orders">
+        <action
+            android:id="@+id/action_ordersFragment_to_orderDetailsFragment"
+            app:destination="@id/orderDetailsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_profile"
@@ -106,6 +141,15 @@
         android:label="Food Details">
         <argument
             android:name="foodId"
+            app:argType="string" />
+    </fragment>
+    
+    <fragment
+        android:id="@+id/orderDetailsFragment"
+        android:name="com.foodfusionai.app.ui.order.OrderDetailsFragment"
+        android:label="Order Details">
+        <argument
+            android:name="orderId"
             app:argType="string" />
     </fragment>
 

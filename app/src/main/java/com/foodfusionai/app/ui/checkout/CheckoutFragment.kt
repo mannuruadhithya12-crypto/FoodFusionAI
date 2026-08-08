@@ -9,6 +9,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
+import com.foodfusionai.app.R
 import com.foodfusionai.app.databinding.FragmentCheckoutBinding
 import com.foodfusionai.app.ui.base.BaseFragment
 import com.foodfusionai.app.utils.hide
@@ -146,10 +148,14 @@ class CheckoutFragment : BaseFragment<FragmentCheckoutBinding>() {
     }
 
     private fun showValidationDialog(message: String, isSuccess: Boolean) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(if (isSuccess) "Checkout Verified" else "Checkout Alert")
-            .setMessage(message)
-            .setPositiveButton("OK", null)
-            .show()
+        if (isSuccess) {
+            findNavController().navigate(R.id.action_checkoutFragment_to_paymentFragment)
+        } else {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Checkout Alert")
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show()
+        }
     }
 }
