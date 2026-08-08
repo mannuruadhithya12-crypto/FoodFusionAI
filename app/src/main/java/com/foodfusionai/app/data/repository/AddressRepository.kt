@@ -9,12 +9,27 @@ import com.foodfusionai.app.utils.Resource
 interface AddressRepository {
 
     /**
-     * Fetches saved delivery addresses.
+     * Observes real-time changes to the user's addresses.
      */
-    suspend fun getAddresses(): Resource<List<Address>>
+    fun observeAddresses(): kotlinx.coroutines.flow.Flow<Resource<List<Address>>>
 
     /**
      * Saves a new delivery address.
      */
     suspend fun addAddress(address: Address): Resource<Unit>
+    
+    /**
+     * Updates an existing delivery address.
+     */
+    suspend fun updateAddress(address: Address): Resource<Unit>
+    
+    /**
+     * Deletes a delivery address.
+     */
+    suspend fun deleteAddress(addressId: String): Resource<Unit>
+    
+    /**
+     * Sets a specific address as default via callable backend function.
+     */
+    suspend fun setDefaultAddress(addressId: String): Resource<Unit>
 }

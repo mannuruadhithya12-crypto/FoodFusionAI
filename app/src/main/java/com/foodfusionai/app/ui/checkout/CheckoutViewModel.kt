@@ -44,18 +44,28 @@ class CheckoutViewModel(
         scope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            // Fetch Addresses list
-            val addrRes = addressRepository.getAddresses()
-            val addresses = (addrRes as? Resource.Success)?.data ?: emptyList()
-            val defaultAddress = addresses.firstOrNull()
+            // Observe Addresses
+            scope.launch {
+                addressRepository.observeAddresses().collect { addrRes ->
+                    val addresses = (addrRes as? Resource.Success)?.data ?: emptyList()
+                    val defaultAddress = addresses.find { it.isDefault } ?: addresses.firstOrNull()
+                    
+                    // We only want to set the selected address once when loading, 
+                    // or if the currently selected address was deleted.
+                    val currentSelected = _uiState.value.selectedAddress
+                    if (currentSelected == null || addresses.none { it.id == currentSelected.id }) {
+                        _uiState.update { it.copy(selectedAddress = defaultAddress) }
+                        recalculateTotals()
+                    }
+                }
+            }
 
             // Observe Cart items
             cartRepository.getAllCartItems().collect { cartItems ->
                 _uiState.update { 
                     it.copy(
                         isLoading = false,
-                        cartItems = cartItems,
-                        selectedAddress = defaultAddress
+                        cartItems = cartItems
                     ) 
                 }
                 recalculateTotals()

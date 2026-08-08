@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onOrderStatusUpdated = exports.updateOrderStatus = exports.cancelOrder = exports.razorpayWebhook = exports.verifyRazorpayPayment = exports.createRazorpayOrder = void 0;
+exports.deleteUserAccount = exports.setDefaultAddress = exports.onOrderStatusUpdated = exports.updateOrderStatus = exports.cancelOrder = exports.razorpayWebhook = exports.verifyRazorpayPayment = exports.createRazorpayOrder = void 0;
 const admin = __importStar(require("firebase-admin"));
 admin.initializeApp();
 var createOrder_1 = require("./razorpay/createOrder");
@@ -48,4 +48,8 @@ var updateOrderStatus_1 = require("./order/updateOrderStatus");
 Object.defineProperty(exports, "updateOrderStatus", { enumerable: true, get: function () { return updateOrderStatus_1.updateOrderStatus; } });
 var fcmNotification_1 = require("./order/fcmNotification");
 Object.defineProperty(exports, "onOrderStatusUpdated", { enumerable: true, get: function () { return fcmNotification_1.onOrderStatusUpdated; } });
+var setDefaultAddress_1 = require("./user/setDefaultAddress");
+Object.defineProperty(exports, "setDefaultAddress", { enumerable: true, get: function () { return setDefaultAddress_1.setDefaultAddress; } });
+var deleteUserAccount_1 = require("./user/deleteUserAccount");
+Object.defineProperty(exports, "deleteUserAccount", { enumerable: true, get: function () { return deleteUserAccount_1.deleteUserAccount; } });
 //# sourceMappingURL=index.js.map

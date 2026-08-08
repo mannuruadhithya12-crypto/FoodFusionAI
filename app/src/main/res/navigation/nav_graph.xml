@@ -120,7 +120,56 @@
     <fragment
         android:id="@+id/nav_profile"
         android:name="com.foodfusionai.app.ui.profile.ProfileFragment"
-        android:label="Profile" />
+        android:label="Profile">
+        <action
+            android:id="@+id/action_profileFragment_to_addressListFragment"
+            app:destination="@id/addressListFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_accountSettingsFragment"
+            app:destination="@id/accountSettingsFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_ordersFragment"
+            app:destination="@id/nav_orders" />
+        <action
+            android:id="@+id/action_profileFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addressListFragment"
+        android:name="com.foodfusionai.app.ui.profile.address.AddressListFragment"
+        android:label="My Addresses">
+        <action
+            android:id="@+id/action_addressListFragment_to_addEditAddressFragment"
+            app:destination="@id/addEditAddressFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addEditAddressFragment"
+        android:name="com.foodfusionai.app.ui.profile.address.AddEditAddressFragment"
+        android:label="Address Details">
+        <argument
+            android:name="addressId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/accountSettingsFragment"
+        android:name="com.foodfusionai.app.ui.profile.settings.AccountSettingsFragment"
+        android:label="Account Settings">
+        <action
+            android:id="@+id/action_accountSettingsFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_home"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_accountSettingsFragment_to_forgotPasswordFragment"
+            app:destination="@id/forgotPasswordFragment" />
+    </fragment>
 
     <!-- Details Placeholders -->
     <fragment
