@@ -27,10 +27,11 @@ class PaymentRepositoryImpl(
     override suspend fun verifyPayment(
         transactionId: String,
         referenceId: String,
+        signature: String?,
         expectedAmount: Double
     ): Resource<Boolean> {
         return try {
-            val isVerified = paymentGateway.verifyPayment(transactionId, referenceId, expectedAmount)
+            val isVerified = paymentGateway.verifyPayment(transactionId, referenceId, signature, expectedAmount)
             Resource.Success(isVerified)
         } catch (e: Exception) {
             Resource.Error("Payment verification failed: ${e.message}")

@@ -82,4 +82,7 @@ dependencies {
     // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.bundles.testing)
+
+    // Razorpay
+    implementation("com.razorpay:checkout:1.6.39")
 }

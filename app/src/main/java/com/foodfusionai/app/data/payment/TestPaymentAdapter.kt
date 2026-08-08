@@ -50,6 +50,7 @@ class TestPaymentAdapter : PaymentGateway {
     override suspend fun verifyPayment(
         transactionId: String,
         referenceId: String,
+        signature: String?,
         expectedAmount: Double
     ): Boolean {
         // Simulate verification network delay

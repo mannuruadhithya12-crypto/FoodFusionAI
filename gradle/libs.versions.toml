@@ -68,6 +68,7 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+firebase-functions = { group = "com.google.firebase", name = "firebase-functions" }
 
 # 3rd Party
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
@@ -79,7 +80,7 @@ junit-ext = { group = "androidx.test.ext", name = "junit", version.ref = "junitE
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 
 [bundles]
-firebase = ["firebase-analytics", "firebase-auth", "firebase-firestore", "firebase-storage", "firebase-messaging"]
+firebase = ["firebase-analytics", "firebase-auth", "firebase-firestore", "firebase-storage", "firebase-messaging", "firebase-functions"]
 lifecycle = ["lifecycle-viewmodel-ktx", "lifecycle-livedata-ktx", "lifecycle-runtime-ktx", "lifecycle-common-java8"]
 navigation = ["navigation-fragment-ktx", "navigation-ui-ktx"]
 room = ["room-runtime", "room-ktx"]

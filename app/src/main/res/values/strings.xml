@@ -48,4 +48,7 @@
     <string name="reset_email_sent">Password reset email sent!</string>
     <string name="login_successful">Login successful</string>
     <string name="register_successful">Registration successful</string>
+    
+    <!-- Razorpay -->
+    <string name="razorpay_key_id">rzp_test_TNEufRBXoxVAip</string>
 </resources>

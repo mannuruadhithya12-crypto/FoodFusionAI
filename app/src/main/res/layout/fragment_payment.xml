@@ -39,24 +39,10 @@
         android:layout_marginBottom="32dp" />
 
     <Button
-        android:id="@+id/btnPaySuccess"
+        android:id="@+id/btnPayNow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pay Successfully (Simulate)"
-        android:layout_marginBottom="8dp"/>
-        
-    <Button
-        android:id="@+id/btnPayFail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Simulate Failure (Insufficient Funds)"
-        android:layout_marginBottom="8dp"/>
-        
-    <Button
-        android:id="@+id/btnPayCancel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Simulate User Cancellation"
+        android:text="Pay Now"
         android:layout_marginBottom="8dp"/>
 
     <Button

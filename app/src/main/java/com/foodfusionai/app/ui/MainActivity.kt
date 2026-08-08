@@ -13,8 +13,9 @@ import com.foodfusionai.app.utils.show
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
+import androidx.activity.viewModels
 
-class MainActivity : BaseActivity<ActivityMainBinding>() {
+class MainActivity : BaseActivity<ActivityMainBinding>(), com.razorpay.PaymentResultWithDataListener {
 
     override fun getViewBinding(): ActivityMainBinding =
         ActivityMainBinding.inflate(layoutInflater)
@@ -60,6 +61,28 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     }
                 }
             }
+        }
+    }
+
+    override fun onPaymentSuccess(paymentId: String?, paymentData: com.razorpay.PaymentData?) {
+        val sharedPaymentViewModel: com.foodfusionai.app.ui.checkout.payment.SharedPaymentViewModel by viewModels()
+        lifecycleScope.launch {
+            if (paymentId != null && paymentData != null) {
+                sharedPaymentViewModel.emitSuccess(
+                    paymentId = paymentId,
+                    signature = paymentData.signature ?: "",
+                    orderId = paymentData.orderId ?: ""
+                )
+            } else {
+                sharedPaymentViewModel.emitError(0, "Invalid payment data received on success")
+            }
+        }
+    }
+
+    override fun onPaymentError(code: Int, response: String?, paymentData: com.razorpay.PaymentData?) {
+        val sharedPaymentViewModel: com.foodfusionai.app.ui.checkout.payment.SharedPaymentViewModel by viewModels()
+        lifecycleScope.launch {
+            sharedPaymentViewModel.emitError(code, response ?: "Unknown error")
         }
     }
 }

@@ -90,7 +90,7 @@ class PaymentRepositoryTest {
         val initRes = paymentRepository.initiatePayment(request).toList().last() as Resource.Success
         val successData = initRes.data as PaymentResult.Success
         
-        val verifyRes = paymentRepository.verifyPayment(successData.transactionId, successData.referenceId, 350.0)
+        val verifyRes = paymentRepository.verifyPayment(successData.transactionId, successData.referenceId, null, 350.0)
         assertTrue(verifyRes is Resource.Success && verifyRes.data == true)
     }
     
@@ -104,7 +104,7 @@ class PaymentRepositoryTest {
         val initRes = paymentRepository.initiatePayment(request).toList().last() as Resource.Success
         val successData = initRes.data as PaymentResult.Success
         
-        val verifyRes = paymentRepository.verifyPayment(successData.transactionId, successData.referenceId, 300.0)
+        val verifyRes = paymentRepository.verifyPayment(successData.transactionId, successData.referenceId, null, 300.0)
         assertTrue(verifyRes is Resource.Success && verifyRes.data == false)
     }
 }

@@ -24,23 +24,28 @@ import com.foodfusionai.app.ui.checkout.CheckoutViewModel
 import kotlinx.coroutines.launch
 import java.util.UUID
 
+import com.razorpay.Checkout
+import org.json.JSONObject
+
 class PaymentFragment : Fragment() {
 
     private var _binding: FragmentPaymentBinding? = null
     private val binding get() = _binding!!
 
-    // Shared with Checkout to get the final snapshot/cart
     private val checkoutViewModel: CheckoutViewModel by activityViewModels { CheckoutViewModel.Factory() }
+    
+    private val sharedPaymentViewModel: SharedPaymentViewModel by activityViewModels()
 
     private val paymentViewModel: PaymentViewModel by activityViewModels {
         PaymentViewModel.Factory(
-            paymentRepository = PaymentRepositoryImpl(TestPaymentAdapter()),
+            paymentRepository = PaymentRepositoryImpl(com.foodfusionai.app.data.payment.RazorpayPaymentAdapter()),
             orderRepository = OrderRepositoryImpl(),
             cartRepository = CartRepositoryImpl(requireContext())
         )
     }
 
     private var pendingAmount: Double = 0.0
+    private var currentReferenceId: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,12 +63,11 @@ class PaymentFragment : Fragment() {
 
         setupClickListeners()
         observePaymentState()
+        observeSharedRazorpayResult()
     }
 
     private fun setupClickListeners() {
-        binding.btnPaySuccess.setOnClickListener { startPayment(pendingAmount) }
-        binding.btnPayFail.setOnClickListener { startPayment(9999.0) } // magic amount for fail
-        binding.btnPayCancel.setOnClickListener { startPayment(8888.0) } // magic amount for cancel
+        binding.btnPayNow.setOnClickListener { startPayment(pendingAmount) }
         binding.btnRetry.setOnClickListener {
             binding.btnRetry.visibility = View.GONE
             startPayment(pendingAmount)
@@ -73,7 +77,6 @@ class PaymentFragment : Fragment() {
     private fun startPayment(amountToProcess: Double) {
         val uiState = checkoutViewModel.uiState.value
         
-        // Ensure snapshot
         val address = uiState.selectedAddress
         val addressSnapshot = if (address != null) com.foodfusionai.app.data.models.order.AddressSnapshot.fromAddress(address) else null
 
@@ -91,7 +94,6 @@ class PaymentFragment : Fragment() {
             )
         }
 
-        // Dummy user Id, normally from AuthRepository
         val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: "test_user_id"
         val restaurantId = uiState.cartItems.firstOrNull()?.restaurantId ?: ""
 
@@ -108,10 +110,11 @@ class PaymentFragment : Fragment() {
             deliveryInstructions = uiState.deliveryInstructions
         )
 
+        currentReferenceId = "REF_${UUID.randomUUID()}"
         val request = PaymentRequest(
             amount = amountToProcess,
             paymentMethod = PaymentMethod.UPI,
-            referenceId = "REF_${UUID.randomUUID()}"
+            referenceId = currentReferenceId!!
         )
 
         paymentViewModel.startPaymentFlow(request, orderSnapshot)
@@ -123,9 +126,7 @@ class PaymentFragment : Fragment() {
                 paymentViewModel.uiState.collect { state ->
                     binding.progressBar.visibility = if (state.isProcessing) View.VISIBLE else View.GONE
                     
-                    binding.btnPaySuccess.isEnabled = !state.isProcessing
-                    binding.btnPayFail.isEnabled = !state.isProcessing
-                    binding.btnPayCancel.isEnabled = !state.isProcessing
+                    binding.btnPayNow.isEnabled = !state.isProcessing
                     
                     if (state.error != null) {
                         binding.tvStatus.text = state.error
@@ -134,17 +135,42 @@ class PaymentFragment : Fragment() {
                                state.paymentResult is com.foodfusionai.app.data.payment.PaymentResult.Cancelled) {
                         binding.tvStatus.text = "Payment didn't succeed. Please try again."
                         binding.btnRetry.visibility = View.VISIBLE
+                    } else if (state.paymentResult is com.foodfusionai.app.data.payment.PaymentResult.RequiresAction) {
+                        val action = (state.paymentResult as com.foodfusionai.app.data.payment.PaymentResult.RequiresAction).action
+                        if (action is com.foodfusionai.app.data.payment.PaymentAction.OpenCheckout) {
+                            launchRazorpayCheckout(action.options as JSONObject)
+                        }
                     } else {
                         binding.tvStatus.text = ""
                         binding.btnRetry.visibility = View.GONE
                     }
 
                     if (state.orderCreated != null) {
-                        // Order successful! Navigate to confirmation
                         findNavController().navigate(R.id.action_paymentFragment_to_orderConfirmationFragment)
                     }
                 }
             }
+        }
+    }
+
+    private fun observeSharedRazorpayResult() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                sharedPaymentViewModel.razorpayResult.collect { result ->
+                    val refId = currentReferenceId ?: return@collect
+                    paymentViewModel.submitRazorpayResult(result, pendingAmount, refId)
+                }
+            }
+        }
+    }
+
+    private fun launchRazorpayCheckout(options: JSONObject) {
+        try {
+            val checkout = Checkout()
+            checkout.setKeyID(getString(R.string.razorpay_key_id))
+            checkout.open(requireActivity(), options)
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Error initializing Razorpay", Toast.LENGTH_SHORT).show()
         }
     }
 

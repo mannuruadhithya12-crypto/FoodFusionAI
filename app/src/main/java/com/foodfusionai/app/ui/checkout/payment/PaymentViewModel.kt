@@ -49,8 +49,11 @@ class PaymentViewModel(
                     is Resource.Loading -> _uiState.update { it.copy(isProcessing = true, error = null) }
                     is Resource.Success -> {
                         val result = res.data
-                        if (result is PaymentResult.Success) {
-                            verifyAndCreateOrder(result)
+                        if (result is PaymentResult.RequiresAction) {
+                            // The fragment will observe this and launch Checkout
+                            _uiState.update { it.copy(isProcessing = false, paymentResult = result) }
+                        } else if (result is PaymentResult.Success) {
+                            verifyAndCreateOrder(result.transactionId, result.referenceId, result.signature, result.amount)
                         } else {
                             // Failed or Cancelled - Cart is naturally preserved as we do not clear it
                             _uiState.update { it.copy(isProcessing = false, paymentResult = result) }
@@ -67,19 +70,52 @@ class PaymentViewModel(
         }
     }
 
-    private suspend fun verifyAndCreateOrder(result: PaymentResult.Success) {
+    /**
+     * Called by the fragment after receiving Razorpay callback.
+     */
+    fun submitRazorpayResult(callbackResult: RazorpayCallbackResult, amount: Double, referenceId: String) {
+        when (callbackResult) {
+            is RazorpayCallbackResult.Success -> {
+                _uiState.update { it.copy(isProcessing = true) }
+                coroutineScope.launch {
+                    verifyAndCreateOrder(
+                        transactionId = callbackResult.paymentId,
+                        referenceId = referenceId,
+                        signature = callbackResult.signature,
+                        amount = amount
+                    )
+                }
+            }
+            is RazorpayCallbackResult.Error -> {
+                _uiState.update { 
+                    it.copy(
+                        isProcessing = false, 
+                        paymentResult = PaymentResult.Failed(callbackResult.description, referenceId)
+                    ) 
+                }
+            }
+        }
+    }
+
+    private suspend fun verifyAndCreateOrder(
+        transactionId: String, 
+        referenceId: String, 
+        signature: String?,
+        amount: Double
+    ) {
         val verificationRes = paymentRepository.verifyPayment(
-            transactionId = result.transactionId,
-            referenceId = result.referenceId,
-            expectedAmount = result.amount
+            transactionId = transactionId,
+            referenceId = referenceId,
+            signature = signature,
+            expectedAmount = amount
         )
 
         if (verificationRes is Resource.Success && verificationRes.data == true) {
             val orderToCreate = pendingOrderSnapshot?.copy(
-                paymentReference = result.referenceId,
+                paymentReference = referenceId,
                 paymentStatus = com.foodfusionai.app.data.models.order.PaymentStatus.SUCCESS,
                 orderStatus = com.foodfusionai.app.data.models.order.OrderStatus.CONFIRMED,
-                totalAmount = result.amount // Ensuring exact verified amount
+                totalAmount = amount // Ensuring exact verified amount
             )
 
             if (orderToCreate == null) {

@@ -11,6 +11,7 @@ interface PaymentRepository {
     suspend fun verifyPayment(
         transactionId: String,
         referenceId: String,
+        signature: String?,
         expectedAmount: Double
     ): Resource<Boolean>
 }

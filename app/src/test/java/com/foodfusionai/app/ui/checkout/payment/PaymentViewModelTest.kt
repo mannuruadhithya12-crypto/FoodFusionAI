@@ -105,7 +105,7 @@ class PaymentViewModelTest {
         var verifySuccess = false
 
         override fun initiatePayment(request: PaymentRequest): Flow<Resource<PaymentResult>> = initiateFlow
-        override suspend fun verifyPayment(transactionId: String, referenceId: String, expectedAmount: Double): Resource<Boolean> {
+        override suspend fun verifyPayment(transactionId: String, referenceId: String, signature: String?, expectedAmount: Double): Resource<Boolean> {
             return Resource.Success(verifySuccess)
         }
     }
