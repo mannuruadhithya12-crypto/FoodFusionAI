@@ -21,14 +21,22 @@ class FoodFusionMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
+        
+        val orderId = message.data["orderId"]
+        
         message.notification?.let {
-            showNotification(it.title, it.body)
+            showNotification(it.title, it.body, orderId)
         }
     }
 
-    private fun showNotification(title: String?, body: String?) {
+    private fun showNotification(title: String?, body: String?, orderId: String?) {
         val intent = Intent(this, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        
+        if (orderId != null) {
+            intent.putExtra("deep_link_order_id", orderId)
+        }
+        
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE

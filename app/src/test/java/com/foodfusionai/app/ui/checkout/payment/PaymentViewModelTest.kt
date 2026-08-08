@@ -119,6 +119,7 @@ class PaymentViewModelTest {
         }
         override fun getUserOrders(userId: String): Flow<Resource<List<Order>>> = flowOf()
         override fun getOrderById(orderId: String): Flow<Resource<Order>> = flowOf()
+        override fun observeOrderById(orderId: String): Flow<Resource<Order>> = kotlinx.coroutines.flow.flowOf(Resource.Success(Order()))
     }
 
     class FakeCartRepository : CartRepository {

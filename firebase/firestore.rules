@@ -24,10 +24,19 @@ service cloud.firestore {
       allow write: if false;
     }
     
-    // Orders can be read/written by the user who created them
+    // Orders can be read by the user who created them, and created by them.
     match /orders/{orderId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      
+      // Prevent clients from directly modifying sensitive fields
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'orderStatus', 'paymentStatus', 'subtotal', 'totalAmount', 
+          'deliveryFee', 'discount', 'userId', 'paymentReference', 
+          'deliveryPartner', 'deliveryLocation', 'statusHistory', 
+          'createdAt', 'estimatedDeliveryAt'
+        ]));
     }
     
     // Carts are private to users

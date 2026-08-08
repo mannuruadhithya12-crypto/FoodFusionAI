@@ -28,7 +28,35 @@ data class Order(
     
     // Timestamps
     val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
+    
+    // Tracking & Delivery
+    val estimatedDeliveryAt: Long? = null,
+    val deliveryPartner: DeliveryPartner? = null,
+    val deliveryLocation: DeliveryLocation? = null,
+    val statusHistory: List<OrderStatusHistory> = emptyList()
+)
+
+data class DeliveryPartner(
+    val id: String = "",
+    val name: String = "",
+    val phone: String = "",
+    val vehicleType: String = "",
+    val vehicleNumber: String = ""
+)
+
+data class DeliveryLocation(
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
     val updatedAt: Long = System.currentTimeMillis()
+)
+
+data class OrderStatusHistory(
+    val status: OrderStatus = OrderStatus.PENDING_PAYMENT,
+    val previousStatus: OrderStatus? = null,
+    val timestamp: Long = System.currentTimeMillis(),
+    val updatedBy: String = "",
+    val message: String = ""
 )
 
 data class AddressSnapshot(

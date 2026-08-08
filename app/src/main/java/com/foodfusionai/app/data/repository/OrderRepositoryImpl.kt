@@ -122,4 +122,37 @@ class OrderRepositoryImpl : OrderRepository {
             emit(Resource.Error(e.message ?: "Failed to fetch order details"))
         }
     }
+
+    override fun observeOrderById(orderId: String): Flow<Resource<Order>> = callbackFlow {
+        trySend(Resource.Loading)
+        val db = firestore
+        if (db == null) {
+            trySend(Resource.Error("Firestore not configured"))
+            close()
+            return@callbackFlow
+        }
+
+        val listenerRegistration = db.collection("orders").document(orderId)
+            .addSnapshotListener(com.google.firebase.firestore.MetadataChanges.INCLUDE) { snapshot, error ->
+                if (error != null) {
+                    trySend(Resource.Error(error.message ?: "Error observing order"))
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    val order = snapshot.toObject(Order::class.java)
+                    if (order != null) {
+                        trySend(Resource.Success(order))
+                    } else {
+                        trySend(Resource.Error("Error parsing order"))
+                    }
+                } else {
+                    trySend(Resource.Error("Order not found"))
+                }
+            }
+
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
 }

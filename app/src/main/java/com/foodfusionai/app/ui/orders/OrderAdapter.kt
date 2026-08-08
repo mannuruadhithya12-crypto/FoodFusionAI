@@ -28,9 +28,30 @@ class OrderAdapter(
 
         fun bind(order: Order) {
             binding.tvRestaurantName.text = order.restaurantName
-            binding.tvOrderId.text = "Order ID: ${order.orderId}"
+            
+            val sdf = java.text.SimpleDateFormat("MMM dd, yyyy • hh:mm a", java.util.Locale.getDefault())
+            val dateStr = sdf.format(java.util.Date(order.createdAt))
+            
+            // Reusing tvOrderId for date & id string
+            binding.tvOrderId.text = "Order ID: ${order.orderId}\n$dateStr"
             binding.tvTotalAmount.text = "₹${order.totalAmount}"
-            binding.tvStatus.text = order.orderStatus.name.replace("_", " ")
+            
+            // Adjust color based on status
+            val statusStr = order.orderStatus.name.replace("_", " ")
+            binding.tvStatus.text = statusStr
+            when (order.orderStatus) {
+                com.foodfusionai.app.data.models.order.OrderStatus.CANCELLED,
+                com.foodfusionai.app.data.models.order.OrderStatus.PAYMENT_FAILED -> {
+                    binding.tvStatus.setTextColor(android.graphics.Color.RED)
+                }
+                com.foodfusionai.app.data.models.order.OrderStatus.DELIVERED -> {
+                    binding.tvStatus.setTextColor(android.graphics.Color.DKGRAY)
+                }
+                else -> {
+                    // default green
+                    binding.tvStatus.setTextColor(android.graphics.Color.parseColor("#388E3C"))
+                }
+            }
 
             binding.root.setOnClickListener {
                 onItemClick(order)

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -13,16 +14,17 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.foodfusionai.app.data.repository.OrderRepositoryImpl
 import com.foodfusionai.app.databinding.FragmentOrderDetailsBinding
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class OrderDetailsFragment : Fragment() {
 
     private var _binding: FragmentOrderDetailsBinding? = null
     private val binding get() = _binding!!
 
-    // In a real app we'd have a specific method in ViewModel to fetch by ID or share from Orders list
-    // Here we will just fetch it directly for completeness
-    private val orderViewModel: OrderViewModel by viewModels {
-        OrderViewModel.Factory(OrderRepositoryImpl())
+    private val trackingViewModel: OrderTrackingViewModel by viewModels {
+        OrderTrackingViewModel.Factory(OrderRepositoryImpl())
     }
 
     override fun onCreateView(
@@ -38,11 +40,89 @@ class OrderDetailsFragment : Fragment() {
         
         val orderId = arguments?.getString("orderId")
         if (orderId != null) {
-            // Wait, our OrderViewModel doesn't have fetchOrderById exposed as state yet.
-            // For the sake of phase 6, this is a placeholder screen, but we should at least try to load it.
-            // To simplify, let's just display "Loading..." then "Details for order: $orderId"
-            binding.tvOrderId.text = "Order ID: $orderId"
+            trackingViewModel.startTracking(orderId)
+        } else {
+            Toast.makeText(context, "No Order ID provided", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnCancelOrder.setOnClickListener {
+            trackingViewModel.cancelOrder()
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                trackingViewModel.uiState.collect { state ->
+                    updateUi(state)
+                }
+            }
+        }
+    }
+
+    private fun updateUi(state: OrderTrackingUiState) {
+        binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+        binding.tvOfflineBanner.visibility = if (state.isOffline) View.VISIBLE else View.GONE
+        
+        if (state.error != null) {
+            Toast.makeText(context, state.error, Toast.LENGTH_SHORT).show()
+        }
+        
+        if (state.cancelError != null) {
+            Toast.makeText(context, state.cancelError, Toast.LENGTH_LONG).show()
+        }
+        
+        val order = state.order
+        if (order != null) {
             binding.svOrderDetails.visibility = View.VISIBLE
+            binding.tvOrderId.text = "Order ID: ${order.orderId}"
+            binding.tvRestaurant.text = "Restaurant: ${order.restaurantName}"
+            binding.tvStatus.text = "Status: ${order.orderStatus.name}"
+            binding.tvTotal.text = "Total: ₹${order.totalAmount}"
+            
+            // ETA
+            if (order.estimatedDeliveryAt != null) {
+                val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                val etaStr = sdf.format(Date(order.estimatedDeliveryAt))
+                binding.tvETA.text = "ETA: $etaStr"
+            } else {
+                binding.tvETA.text = "ETA: Pending..."
+            }
+            
+            // Timeline
+            val timelineText = StringBuilder()
+            val history = order.statusHistory.sortedBy { it.timestamp }
+            val sdf = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
+            for (step in history) {
+                timelineText.append("• ${step.status.name} at ${sdf.format(Date(step.timestamp))}\n")
+            }
+            if (timelineText.isEmpty()) {
+                timelineText.append("• ${order.orderStatus.name} at ${sdf.format(Date(order.createdAt))}")
+            }
+            binding.tvTimeline.text = timelineText.toString()
+            
+            // Delivery Partner
+            if (order.deliveryPartner != null) {
+                binding.cardDeliveryPartner.visibility = View.VISIBLE
+                binding.tvDeliveryPartnerDetails.text = "Name: ${order.deliveryPartner.name}\nPhone: ${order.deliveryPartner.phone}\nVehicle: ${order.deliveryPartner.vehicleNumber}"
+            } else {
+                binding.cardDeliveryPartner.visibility = View.GONE
+            }
+
+            // Items layout
+            binding.layoutItems.removeAllViews()
+            order.items.forEach { item ->
+                val tv = TextView(context).apply {
+                    text = "${item.quantity}x ${item.foodName} - ₹${item.unitPrice}"
+                    setPadding(0, 4, 0, 4)
+                }
+                binding.layoutItems.addView(tv)
+            }
+            
+            // Cancel button state
+            binding.btnCancelOrder.visibility = if (state.canCancel) View.VISIBLE else View.GONE
+            binding.btnCancelOrder.isEnabled = !state.isCancelling
+            binding.btnCancelOrder.text = if (state.isCancelling) "Cancelling..." else "Cancel Order"
+        } else {
+            binding.svOrderDetails.visibility = View.GONE
         }
     }
 

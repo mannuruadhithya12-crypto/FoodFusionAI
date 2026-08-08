@@ -17,7 +17,12 @@ interface OrderRepository {
     fun getUserOrders(userId: String): Flow<Resource<List<Order>>>
 
     /**
-     * Fetches a single order by ID.
+     * Fetches a single order by ID one time.
      */
     fun getOrderById(orderId: String): Flow<Resource<Order>>
+
+    /**
+     * Observes a single order by ID in real-time, handling offline cache.
+     */
+    fun observeOrderById(orderId: String): Flow<Resource<Order>>
 }
