@@ -145,10 +145,22 @@ class CheckoutViewModelTest {
 
     class MockAddressRepository : AddressRepository {
         var addressesList = listOf(Address("addr_1", "Home", "123, Park Street", "Bangalore"))
-        override suspend fun getAddresses(): Resource<List<Address>> {
-            return Resource.Success(addressesList)
-        }
+        
+        override fun observeAddresses(): kotlinx.coroutines.flow.Flow<Resource<List<Address>>> = kotlinx.coroutines.flow.flowOf(Resource.Success(addressesList))
+
         override suspend fun addAddress(address: Address): Resource<Unit> {
+            return Resource.Success(Unit)
+        }
+        
+        override suspend fun updateAddress(address: Address): Resource<Unit> {
+            return Resource.Success(Unit)
+        }
+        
+        override suspend fun deleteAddress(addressId: String): Resource<Unit> {
+            return Resource.Success(Unit)
+        }
+        
+        override suspend fun setDefaultAddress(addressId: String): Resource<Unit> {
             return Resource.Success(Unit)
         }
     }

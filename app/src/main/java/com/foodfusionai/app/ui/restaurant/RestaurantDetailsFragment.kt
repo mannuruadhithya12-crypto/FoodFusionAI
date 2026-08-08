@@ -9,10 +9,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.foodfusionai.app.R
 import com.foodfusionai.app.data.models.Food
 import com.foodfusionai.app.databinding.FragmentRestaurantDetailsBinding
 import com.foodfusionai.app.ui.base.BaseFragment
+import com.foodfusionai.app.ui.favorites.FavoriteViewModel
 import com.foodfusionai.app.ui.restaurant.adapters.MenuFoodAdapter
 import com.foodfusionai.app.utils.hide
 import com.foodfusionai.app.utils.loadImage
@@ -24,6 +26,7 @@ import kotlinx.coroutines.launch
 class RestaurantDetailsFragment : BaseFragment<FragmentRestaurantDetailsBinding>() {
 
     private val viewModel: RestaurantDetailsViewModel by viewModels { RestaurantDetailsViewModel.Factory() }
+    private val favoriteViewModel: FavoriteViewModel by viewModels { FavoriteViewModel.Factory() }
     private lateinit var menuFoodAdapter: MenuFoodAdapter
 
     private var restaurantId: String = "unknown"
@@ -52,6 +55,15 @@ class RestaurantDetailsFragment : BaseFragment<FragmentRestaurantDetailsBinding>
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     renderState(state)
+                }
+            }
+        }
+        
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                favoriteViewModel.uiState.collect { state ->
+                    val isFav = state.favoriteRestaurants.any { it.targetId == restaurantId }
+                    binding.btnFavorite.setColorFilter(if (isFav) requireContext().getColor(R.color.md_theme_light_error) else requireContext().getColor(android.R.color.white))
                 }
             }
         }
@@ -88,6 +100,24 @@ class RestaurantDetailsFragment : BaseFragment<FragmentRestaurantDetailsBinding>
         binding.btnRetry.setOnClickListener {
             viewModel.loadRestaurantData(restaurantId)
         }
+        
+        binding.btnFavorite.setOnClickListener {
+            val restaurant = viewModel.uiState.value.restaurant
+            if (restaurant != null) {
+                favoriteViewModel.toggleFavorite(
+                    targetId = restaurant.id,
+                    targetType = "RESTAURANT",
+                    targetName = restaurant.name,
+                    imageUrl = restaurant.imageUrl,
+                    restaurantId = ""
+                )
+            }
+        }
+        
+        binding.tvRestaurantRating.setOnClickListener {
+            val action = RestaurantDetailsFragmentDirections.actionRestaurantDetailsFragmentToReviewListFragment(targetId = restaurantId)
+            findNavController().navigate(action)
+        }
     }
 
     private fun renderState(state: RestaurantDetailsUiState) {
@@ -115,7 +145,7 @@ class RestaurantDetailsFragment : BaseFragment<FragmentRestaurantDetailsBinding>
         // Render Header profiles
         binding.tvRestaurantTitle.text = restaurant.name
         binding.tvRestaurantCuisine.text = restaurant.description
-        binding.tvRestaurantRating.text = String.format("%.1f ★", restaurant.rating)
+        binding.tvRestaurantRating.text = String.format("%.1f ★ (%d reviews)", restaurant.rating, restaurant.ratingCount)
         binding.tvRestaurantDelivery.text = restaurant.deliveryTime
         binding.tvRestaurantDistance.text = restaurant.address
 

@@ -11,6 +11,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
+import com.foodfusionai.app.data.models.order.OrderStatus
 import com.foodfusionai.app.data.repository.OrderRepositoryImpl
 import com.foodfusionai.app.databinding.FragmentOrderDetailsBinding
 import kotlinx.coroutines.launch
@@ -121,6 +123,22 @@ class OrderDetailsFragment : Fragment() {
             binding.btnCancelOrder.visibility = if (state.canCancel) View.VISIBLE else View.GONE
             binding.btnCancelOrder.isEnabled = !state.isCancelling
             binding.btnCancelOrder.text = if (state.isCancelling) "Cancelling..." else "Cancel Order"
+
+            // Review button state
+            if (order.orderStatus == OrderStatus.DELIVERED) {
+                binding.btnRateOrder.visibility = View.VISIBLE
+                binding.btnRateOrder.setOnClickListener {
+                    val action = OrderDetailsFragmentDirections.actionOrderDetailsFragmentToWriteReviewFragment(
+                        orderId = order.orderId,
+                        restaurantId = order.restaurantId,
+                        foodId = null, // In a real app we might pass specific foods or a restaurant
+                        isEdit = false
+                    )
+                    findNavController().navigate(action)
+                }
+            } else {
+                binding.btnRateOrder.visibility = View.GONE
+            }
         } else {
             binding.svOrderDetails.visibility = View.GONE
         }

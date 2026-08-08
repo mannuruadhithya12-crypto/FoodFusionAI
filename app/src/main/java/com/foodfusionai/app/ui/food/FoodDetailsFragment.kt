@@ -7,9 +7,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.foodfusionai.app.R
 import com.foodfusionai.app.databinding.FragmentFoodDetailsBinding
 import com.foodfusionai.app.ui.base.BaseFragment
+import com.foodfusionai.app.ui.favorites.FavoriteViewModel
 import com.foodfusionai.app.utils.hide
 import com.foodfusionai.app.utils.loadImage
 import com.foodfusionai.app.utils.show
@@ -20,6 +22,7 @@ import kotlinx.coroutines.launch
 class FoodDetailsFragment : BaseFragment<FragmentFoodDetailsBinding>() {
 
     private val viewModel: FoodDetailsViewModel by viewModels { FoodDetailsViewModel.Factory() }
+    private val favoriteViewModel: FavoriteViewModel by viewModels { FavoriteViewModel.Factory() }
     private var foodId: String = "unknown"
 
     override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?) =
@@ -64,6 +67,12 @@ class FoodDetailsFragment : BaseFragment<FragmentFoodDetailsBinding>() {
                         }
                     }
                 }
+                launch {
+                    favoriteViewModel.uiState.collect { state ->
+                        val isFav = state.favoriteFoods.any { it.targetId == foodId }
+                        binding.btnFavorite.setColorFilter(if (isFav) requireContext().getColor(R.color.md_theme_light_error) else requireContext().getColor(android.R.color.white))
+                    }
+                }
             }
         }
     }
@@ -97,6 +106,24 @@ class FoodDetailsFragment : BaseFragment<FragmentFoodDetailsBinding>() {
         binding.chipSpiceMild.setOnClickListener { viewModel.selectSpiceLevel("Mild") }
         binding.chipSpiceMedium.setOnClickListener { viewModel.selectSpiceLevel("Medium") }
         binding.chipSpiceHot.setOnClickListener { viewModel.selectSpiceLevel("Hot") }
+        
+        binding.btnFavorite.setOnClickListener {
+            val food = viewModel.uiState.value.food
+            if (food != null) {
+                favoriteViewModel.toggleFavorite(
+                    targetId = food.id,
+                    targetType = "FOOD",
+                    targetName = food.name,
+                    imageUrl = food.imageUrl,
+                    restaurantId = food.restaurantId
+                )
+            }
+        }
+        
+        binding.tvFoodRating.setOnClickListener {
+            val action = FoodDetailsFragmentDirections.actionFoodDetailsFragmentToReviewListFragment(targetId = foodId)
+            findNavController().navigate(action)
+        }
     }
 
     private fun renderState(state: FoodDetailsUiState) {
@@ -128,7 +155,7 @@ class FoodDetailsFragment : BaseFragment<FragmentFoodDetailsBinding>() {
         binding.tvFoodTitle.text = food.name
         binding.tvFoodDescription.text = food.description
         binding.tvFoodPrice.text = food.price.toCurrencyFormat()
-        binding.tvFoodRating.text = String.format("%.1f ★", food.rating)
+        binding.tvFoodRating.text = String.format("%.1f ★ (%d reviews)", food.rating, food.ratingCount)
         binding.tvFoodRestaurantName.text = "by ${state.restaurant?.name ?: "Partner Restaurant"}"
 
         if (food.imageUrl.isNotEmpty()) {

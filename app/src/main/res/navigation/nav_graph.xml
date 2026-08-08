@@ -171,6 +171,61 @@
             app:destination="@id/forgotPasswordFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.foodfusionai.app.ui.favorites.FavoritesFragment"
+        android:label="Favorites" />
+
+    <fragment
+        android:id="@+id/reviewListFragment"
+        android:name="com.foodfusionai.app.ui.reviews.ReviewListFragment"
+        android:label="Reviews">
+        <argument
+            android:name="targetId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_reviewListFragment_to_writeReviewFragment"
+            app:destination="@id/writeReviewFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/writeReviewFragment"
+        android:name="com.foodfusionai.app.ui.reviews.WriteReviewFragment"
+        android:label="Write Review">
+        <argument
+            android:name="orderId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="restaurantId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="foodId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="isEdit"
+            app:argType="boolean"
+            android:defaultValue="false" />
+        <argument
+            android:name="reviewId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="existingRating"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <argument
+            android:name="existingComment"
+            app:argType="string"
+            android:defaultValue='""' />
+    </fragment>
+
     <!-- Details Placeholders -->
     <fragment
         android:id="@+id/restaurantDetailsFragment"
@@ -182,6 +237,9 @@
         <action
             android:id="@+id/action_restaurantDetailsFragment_to_foodDetailsFragment"
             app:destination="@id/foodDetailsFragment" />
+        <action
+            android:id="@+id/action_restaurantDetailsFragment_to_reviewListFragment"
+            app:destination="@id/reviewListFragment" />
     </fragment>
 
     <fragment
@@ -191,6 +249,9 @@
         <argument
             android:name="foodId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_foodDetailsFragment_to_reviewListFragment"
+            app:destination="@id/reviewListFragment" />
     </fragment>
     
     <fragment
@@ -200,6 +261,9 @@
         <argument
             android:name="orderId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_orderDetailsFragment_to_writeReviewFragment"
+            app:destination="@id/writeReviewFragment" />
     </fragment>
 
 </navigation>

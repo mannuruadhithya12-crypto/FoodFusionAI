@@ -47,6 +47,20 @@
                 app:tint="@android:color/white"
                 android:contentDescription="Back" />
 
+            <!-- Favorite navigation float -->
+            <ImageButton
+                android:id="@+id/btnFavorite"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="16dp"
+                android:background="@drawable/bg_circle"
+                android:backgroundTint="#80000000"
+                android:src="@android:drawable/btn_star"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@android:color/white"
+                android:contentDescription="Favorite" />
+
             <!-- Info Container Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardRestaurantInfo"
@@ -118,10 +132,12 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:drawablePadding="4dp"
-                            android:text="4.5 ★"
+                            android:text="4.5 ★ (0 reviews)"
                             android:textAppearance="?attr/textAppearanceLabelLarge"
-                            android:textColor="?attr/colorOnSurface"
+                            android:textColor="?attr/colorPrimary"
                             android:textStyle="bold"
+                            android:background="?attr/selectableItemBackground"
+                            android:padding="4dp"
                             app:drawableStartCompat="@drawable/ic_star"
                             app:drawableTint="#FFC107" />
 

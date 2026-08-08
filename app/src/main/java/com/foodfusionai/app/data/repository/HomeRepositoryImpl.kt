@@ -126,14 +126,14 @@ class HomeRepositoryImpl(
     )
 
     private fun getMockRestaurants(): List<Restaurant> = listOf(
-        Restaurant("r1", "Pizza Palace", "Cheesy Italian Pizzas", "https://mock.foodfusion.ai/r1.png", 4.5, "25-30 mins", 29.0, "MG Road", true, listOf("c1")),
-        Restaurant("r2", "Burger Bistro", "Juicy Gourmet Burgers", "https://mock.foodfusion.ai/r2.png", 4.2, "20-25 mins", 39.0, "Sector 15", true, listOf("c2")),
-        Restaurant("r3", "Biryani House", "Authentic Mughlai Biryanis", "https://mock.foodfusion.ai/r3.png", 4.7, "35-40 mins", 49.0, "Connaught Place", true, listOf("c3"))
+        Restaurant(id = "r1", name = "Pizza Palace", description = "Cheesy Italian Pizzas", imageUrl = "https://mock.foodfusion.ai/r1.png", rating = 4.5, deliveryTime = "25-30 mins", deliveryFee = 29.0, address = "MG Road", isOpen = true, categories = listOf("c1")),
+        Restaurant(id = "r2", name = "Burger Bistro", description = "Juicy Gourmet Burgers", imageUrl = "https://mock.foodfusion.ai/r2.png", rating = 4.2, deliveryTime = "20-25 mins", deliveryFee = 39.0, address = "Sector 15", isOpen = true, categories = listOf("c2")),
+        Restaurant(id = "r3", name = "Biryani House", description = "Authentic Mughlai Biryanis", imageUrl = "https://mock.foodfusion.ai/r3.png", rating = 4.7, deliveryTime = "35-40 mins", deliveryFee = 49.0, address = "Connaught Place", isOpen = true, categories = listOf("c3"))
     )
 
     private fun getMockTrendingFoods(): List<Food> = listOf(
-        Food("f1", "r1", "c1", "Margherita Pizza", "Fresh mozzarella and basil", 249.0, "https://mock.foodfusion.ai/f1.png", 4.6, true, true, listOf("Cheese", "Tomato Sauce")),
-        Food("f2", "r2", "c2", "Cheese Burst Burger", "Loaded double patty burger", 189.0, "https://mock.foodfusion.ai/f2.png", 4.3, true, false, listOf("Beef", "Cheese")),
-        Food("f3", "r3", "c3", "Chicken Dum Biryani", "Fragrant basmati rice with spices", 299.0, "https://mock.foodfusion.ai/f3.png", 4.8, true, false, listOf("Chicken", "Rice"))
+        Food(id = "f1", restaurantId = "r1", categoryId = "c1", name = "Margherita Pizza", description = "Fresh mozzarella and basil", price = 249.0, imageUrl = "https://mock.foodfusion.ai/f1.png", rating = 4.6, isAvailable = true, isVegetarian = true, ingredients = listOf("Cheese", "Tomato Sauce")),
+        Food(id = "f2", restaurantId = "r2", categoryId = "c2", name = "Cheese Burst Burger", description = "Loaded double patty burger", price = 189.0, imageUrl = "https://mock.foodfusion.ai/f2.png", rating = 4.3, isAvailable = true, isVegetarian = false, ingredients = listOf("Beef", "Cheese")),
+        Food(id = "f3", restaurantId = "r3", categoryId = "c3", name = "Chicken Dum Biryani", description = "Fragrant basmati rice with spices", price = 299.0, imageUrl = "https://mock.foodfusion.ai/f3.png", rating = 4.8, isAvailable = true, isVegetarian = false, ingredients = listOf("Chicken", "Rice"))
     )
 }

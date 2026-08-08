@@ -10,3 +10,8 @@ export { updateOrderStatus } from "./order/updateOrderStatus";
 export { onOrderStatusUpdated } from "./order/fcmNotification";
 export { setDefaultAddress } from "./user/setDefaultAddress";
 export { deleteUserAccount } from "./user/deleteUserAccount";
+
+export { createReview } from "./reviews/createReview";
+export { editReview } from "./reviews/editReview";
+export { deleteReview } from "./reviews/deleteReview";
+export { interactReview } from "./reviews/interactReview";

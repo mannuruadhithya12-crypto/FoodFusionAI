@@ -171,6 +171,15 @@
                 android:text="Cancel Order"
                 android:textColor="@color/design_default_color_error"
                 style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btnRateOrder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Write a Review"
+                style="@style/Widget.Material3.Button"
                 android:layout_marginBottom="24dp"
                 android:visibility="gone"/>
                 

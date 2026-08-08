@@ -1,13 +1,17 @@
 package com.foodfusionai.app.data.models
 
 data class Review(
-    val id: String = "",
+    val reviewId: String = "",
     val userId: String = "",
     val userName: String = "",
-    val userImageUrl: String = "",
+    val orderId: String = "",
     val restaurantId: String = "",
-    val foodId: String? = null,
-    val rating: Double = 0.0,
+    val foodId: String = "",
+    val rating: Int = 0,
     val comment: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
+    val isEdited: Boolean = false,
+    val helpfulCount: Int = 0,
+    val reportCount: Int = 0
 )
