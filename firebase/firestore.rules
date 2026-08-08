@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Restaurants are publicly readable
+    match /restaurants/{restaurantId} {
+      allow read: if true;
+      allow write: if false; // Only admins can write
+    }
+    
+    // Categories are publicly readable
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    // Foods are publicly readable
+    match /foods/{foodId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    // Orders can be read/written by the user who created them
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Carts are private to users
+    match /carts/{cartId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Favorites
+    match /favorites/{favoriteId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Reviews
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+    
+    // Offers
+    match /offers/{offerId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    // Coupons
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    // Analytics
+    match /analytics/{analyticsId} {
+      allow create: if true; // Depending on requirements, could limit to authenticated users
+      allow read, write: if false;
+    }
+  }
+}

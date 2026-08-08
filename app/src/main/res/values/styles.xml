@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Widget.FoodFusion.Button.Primary" parent="Widget.Material3.Button">
+        <item name="cornerRadius">@dimen/radius_lg</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="backgroundTint">?attr/colorPrimary</item>
+    </style>
+    <style name="Widget.FoodFusion.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">@dimen/radius_lg</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+    </style>
+    <style name="Widget.FoodFusion.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="cornerRadius">@dimen/radius_lg</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+    </style>
+    <style name="Widget.FoodFusion.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardCornerRadius">@dimen/radius_md</item>
+        <item name="cardElevation">@dimen/elevation_sm</item>
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+    </style>
+    <style name="Widget.FoodFusion.Card.Elevated" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">@dimen/radius_md</item>
+        <item name="cardElevation">@dimen/elevation_md</item>
+    </style>
+    <style name="Widget.FoodFusion.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_sm</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_sm</item>
+        <item name="android:minHeight">@dimen/input_height</item>
+    </style>
+    <style name="Widget.FoodFusion.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:minHeight">@dimen/toolbar_height</item>
+    </style>
+    <style name="Widget.FoodFusion.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:minHeight">@dimen/bottom_nav_height</item>
+    </style>
+    <style name="Widget.FoodFusion.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="chipCornerRadius">@dimen/radius_sm</item>
+    </style>
+    <style name="Widget.FoodFusion.Badge" parent="Widget.Material3.Badge">
+    </style>
+</resources>

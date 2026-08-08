@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- fontFamily reference "@font/outfit" will be added here -->
+    <style name="TextAppearance.FoodFusion.DisplayLarge" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.DisplayMedium" parent="TextAppearance.Material3.DisplayMedium">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.DisplaySmall" parent="TextAppearance.Material3.DisplaySmall">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+    <style name="TextAppearance.FoodFusion.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+</resources>
