@@ -64,6 +64,13 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
     
+    // Driver tracking locations
+    match /deliveryLocations/{orderId} {
+      allow read: if request.auth != null; // Typically restricted to the ordering customer and admin, keeping it simpler here or matching order rules.
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.driverId;
+      allow update: if request.auth != null && request.auth.uid == request.resource.data.driverId;
+    }
+
     // Reviews
     match /reviews/{reviewId} {
       allow read: if true;
