@@ -45,3 +45,18 @@ secrets.properties
 # Kotlin compiler cache
 .kotlin/
 
+# Node.js
+node_modules/
+.next/
+.turbo/
+
+# Firebase Functions compiled output
+firebase/functions/lib/
+
+# Large debug logs
+log.txt
+log2.txt
+
+# Environment files
+.env
+.env.local

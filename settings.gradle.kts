@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "FoodFusionAI"
 include(":app")
+include(":driver")

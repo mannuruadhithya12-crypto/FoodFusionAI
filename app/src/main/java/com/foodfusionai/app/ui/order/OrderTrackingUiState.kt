@@ -2,9 +2,11 @@ package com.foodfusionai.app.ui.order
 
 import com.foodfusionai.app.data.models.order.Order
 import com.foodfusionai.app.data.models.order.OrderStatus
+import com.foodfusionai.app.data.models.order.DeliveryLocation
 
 data class OrderTrackingUiState(
     val order: Order? = null,
+    val driverLocation: DeliveryLocation? = null,
     val isLoading: Boolean = false,
     val isOffline: Boolean = false,
     val error: String? = null,

@@ -1,9 +1,35 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && (request.auth.token.admin == true || exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)));
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isPartner() {
+      return request.auth != null && 
+        (getUserData().role == 'RESTAURANT_OWNER' || 
+         getUserData().role == 'RESTAURANT_MANAGER' || 
+         getUserData().role == 'RESTAURANT_STAFF') &&
+        getUserData().active == true;
+    }
+
+    function isPartnerOf(restaurantId) {
+      return isPartner() && (restaurantId in getUserData().restaurantIds);
+    }
+
+    // Admin Users collection
+    match /adminUsers/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if true; // Temporarily open for bootstrap
+    }
+
     // Users can read their own data
     match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && (request.auth.uid == userId || isPartner());
       allow create: if request.auth != null && request.auth.uid == userId && request.resource.data.uid == userId;
       allow update: if request.auth != null && request.auth.uid == userId 
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['uid', 'createdAt']));
@@ -36,34 +62,46 @@ service cloud.firestore {
     // Restaurants are publicly readable
     match /restaurants/{restaurantId} {
       allow read: if true;
-      allow write: if false; // Only admins can write
+      allow write: if isAdmin();
+      allow update: if isPartnerOf(restaurantId) && 
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'approvalStatus', 'commission', 'suspension', 'rating', 'ratingCount', 'averageRating'
+        ]));
     }
     
     // Categories are publicly readable
     match /categories/{categoryId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
     
     // Foods are publicly readable
     match /foods/{foodId} {
       allow read: if true;
-      allow write: if false;
+      allow create: if isPartnerOf(request.resource.data.restaurantId) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'rating', 'ratingCount', 'reviewCount', 'averageRating'
+        ]));
+      allow update: if isPartnerOf(resource.data.restaurantId) &&
+        (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'restaurantId', 'rating', 'ratingCount', 'reviewCount', 'averageRating'
+        ]));
+      allow delete: if isPartnerOf(resource.data.restaurantId);
+      allow write: if isAdmin();
     }
     
     // Orders can be read by the user who created them, and created by them.
     match /orders/{orderId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read: if (request.auth != null && (request.auth.uid == resource.data.userId || isPartnerOf(resource.data.restaurantId) || (resource.data.deliveryPartner != null && request.auth.uid == resource.data.deliveryPartner.id))) || isAdmin();
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
       
-      // Prevent clients from directly modifying sensitive fields
-      allow update: if request.auth != null && request.auth.uid == resource.data.userId
+      allow update: if isAdmin() || (request.auth != null && request.auth.uid == resource.data.userId
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'orderStatus', 'paymentStatus', 'subtotal', 'totalAmount', 
           'deliveryFee', 'discount', 'userId', 'paymentReference', 
           'deliveryPartner', 'deliveryLocation', 'statusHistory', 
           'createdAt', 'estimatedDeliveryAt'
-        ]));
+        ])));
     }
     
     // Carts are private to users
@@ -77,10 +115,10 @@ service cloud.firestore {
       allow read, write: if false;
     }
     
-    // Reviews (Callable functions only for write)
+    // Reviews
     match /reviews/{reviewId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin() || (request.auth != null && isPartnerOf(resource.data.restaurantId));
     }
     
     // Reports (Callable functions only for write)
@@ -96,19 +134,94 @@ service cloud.firestore {
     // Offers
     match /offers/{offerId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
     
     // Coupons
     match /coupons/{couponId} {
       allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin();
     }
     
     // Analytics
     match /analytics/{analyticsId} {
       allow create: if true; // Depending on requirements, could limit to authenticated users
       allow read, write: if false;
+    }
+
+    // Audit logs (append-only)
+    match /auditLogs/{logId} {
+      allow read: if request.auth != null && (isPartner() || isAdmin());
+      allow create: if request.auth != null && request.resource.data.actorUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Driver Profile collection
+    match /drivers/{driverId} {
+      allow read: if request.auth != null && (request.auth.uid == driverId || isAdmin());
+      allow create: if request.auth != null && request.auth.uid == driverId && request.resource.data.status == 'PENDING';
+      allow update: if request.auth != null && (isAdmin() || (request.auth.uid == driverId && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'createdAt']))));
+    }
+
+    // Driver private documents
+    match /driverDocuments/{driverId} {
+      allow read: if request.auth != null && (request.auth.uid == driverId || isAdmin());
+      allow write: if request.auth != null && request.auth.uid == driverId;
+    }
+
+    // Live tracking locations per order
+    match /deliveryLocations/{orderId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == get(/databases/$(database)/documents/orders/$(orderId)).data.userId ||
+        request.auth.uid == get(/databases/$(database)/documents/orders/$(orderId)).data.deliveryPartner.id ||
+        isPartnerOf(get(/databases/$(database)/documents/orders/$(orderId)).data.restaurantId) ||
+        isAdmin()
+      );
+      allow write: if request.auth != null && (
+        request.auth.uid == get(/databases/$(database)/documents/orders/$(orderId)).data.deliveryPartner.id ||
+        isAdmin()
+      );
+    }
+
+    // Delivery assignment offers to drivers
+    match /driverOffers/{offerId} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.driverId || isAdmin());
+      allow write: if request.auth != null && (request.auth.uid == request.resource.data.driverId || isAdmin());
+    }
+
+    // Driver Earnings history
+    match /driverEarnings/{driverId} {
+      allow read: if request.auth != null && (request.auth.uid == driverId || isAdmin());
+      allow write: if isAdmin();
+      
+      match /entries/{entryId} {
+        allow read: if request.auth != null && (request.auth.uid == driverId || isAdmin());
+        allow write: if isAdmin();
+      }
+    }
+
+    // Dispatch Config Settings
+    match /config/{configId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Delivery Zones
+    match /deliveryZones/{zoneId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Operations Alerts
+    match /operationsAlerts/{alertId} {
+      allow read: if request.auth != null && (isPartner() || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Delivery Batches
+    match /deliveryBatches/{batchId} {
+      allow read: if request.auth != null && (isAdmin() || request.auth.uid == resource.data.driverId);
+      allow write: if isAdmin();
     }
   }
 }

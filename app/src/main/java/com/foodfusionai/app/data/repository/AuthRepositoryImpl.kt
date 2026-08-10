@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import java.util.UUID
 
 /**
@@ -157,7 +158,9 @@ class AuthRepositoryImpl(
                 val profileUpdates = UserProfileChangeRequest.Builder()
                     .setDisplayName(name)
                     .build()
-                fbUser.updateProfile(profileUpdates).await()
+                withTimeout(5000) {
+                    fbUser.updateProfile(profileUpdates).await()
+                }
             } catch (e: Throwable) {
                 Log.w(TAG, "Failed to update display name on Firebase user profile", e)
             }
@@ -168,7 +171,9 @@ class AuthRepositoryImpl(
             val firestore = firebaseFirestore
             if (firestore != null) {
                 try {
-                    firestore.collection("users").document(user.uid).set(user).await()
+                    withTimeout(5000) {
+                        firestore.collection("users").document(user.uid).set(user).await()
+                    }
                     Log.d(TAG, "User profile successfully saved to Firestore.")
                 } catch (e: Throwable) {
                     Log.w(TAG, "Failed to save user profile to Firestore.", e)

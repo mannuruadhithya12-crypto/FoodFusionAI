@@ -17,3 +17,27 @@ export { createReview } from "./reviews/createReview";
 export { editReview } from "./reviews/editReview";
 export { deleteReview } from "./reviews/deleteReview";
 export { interactReview } from "./reviews/interactReview";
+
+export { bootstrapAdmin } from "./admin/bootstrapAdmin";
+
+// Driver Platform Functions
+export { assignDriverToOrder } from "./order/assignDriverToOrder";
+export { acceptDeliveryAssignment } from "./order/acceptDeliveryAssignment";
+export { declineDeliveryAssignment } from "./order/declineDeliveryAssignment";
+export { updateDeliveryStatus } from "./order/updateDeliveryStatus";
+export { verifyDeliveryOtp } from "./order/verifyDeliveryOtp";
+export { reportDeliveryIssue } from "./order/reportDeliveryIssue";
+export { approveDriver, suspendDriver } from "./admin/approveDriver";
+export { dispatchReadyOrder } from "./order/dispatchReadyOrder";
+export { calculateDeliveryEta } from "./order/calculateDeliveryEta";
+export { detectDeliveryDelay } from "./order/detectDeliveryDelay";
+export { reassignDriver } from "./order/reassignDriver";
+
+
+export {
+    partnerAcceptOrder,
+    partnerRejectOrder,
+    partnerUpdateOrderStatus,
+    inviteRestaurantStaff,
+    removeRestaurantStaff
+} from "./partner/partnerFunctions";

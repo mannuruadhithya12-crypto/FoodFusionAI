@@ -41,99 +41,54 @@ class HomeRepositoryImpl(
     }
 
     override suspend fun getOffers(): Resource<List<Offer>> = withContext(Dispatchers.IO) {
-        val db = firestore ?: return@withContext Resource.Success(getMockOffers())
+        val db = firestore ?: return@withContext Resource.Success(emptyList())
         try {
             val snapshot = db.collection("offers").get().await()
             val list = snapshot.toObjects(Offer::class.java)
-            if (list.isEmpty()) {
-                Resource.Success(getMockOffers())
-            } else {
-                Resource.Success(list)
-            }
+            Resource.Success(list)
         } catch (e: Throwable) {
-            Log.w(TAG, "Firestore offers fetch failed, using fallback mock offers", e)
-            Resource.Success(getMockOffers())
+            Log.w(TAG, "Firestore offers fetch failed", e)
+            Resource.Success(emptyList())
         }
     }
 
     override suspend fun getCategories(): Resource<List<Category>> = withContext(Dispatchers.IO) {
-        val db = firestore ?: return@withContext Resource.Success(getMockCategories())
+        val db = firestore ?: return@withContext Resource.Success(emptyList())
         try {
             val snapshot = db.collection("categories").get().await()
             val list = snapshot.toObjects(Category::class.java)
-            if (list.isEmpty()) {
-                Resource.Success(getMockCategories())
-            } else {
-                Resource.Success(list)
-            }
+            Resource.Success(list)
         } catch (e: Throwable) {
-            Log.w(TAG, "Firestore categories fetch failed, using fallback mock categories", e)
-            Resource.Success(getMockCategories())
+            Log.w(TAG, "Firestore categories fetch failed", e)
+            Resource.Success(emptyList())
         }
     }
 
     override suspend fun getRestaurants(): Resource<List<Restaurant>> = withContext(Dispatchers.IO) {
-        val db = firestore ?: return@withContext Resource.Success(getMockRestaurants())
+        val db = firestore ?: return@withContext Resource.Success(emptyList())
         try {
-            val snapshot = db.collection("restaurants").get().await()
+            val snapshot = db.collection("restaurants").whereEqualTo("isOpen", true).get().await()
             val list = snapshot.toObjects(Restaurant::class.java)
-            if (list.isEmpty()) {
-                Resource.Success(getMockRestaurants())
-            } else {
-                Resource.Success(list)
-            }
+            Resource.Success(list)
         } catch (e: Throwable) {
-            Log.w(TAG, "Firestore restaurants fetch failed, using fallback mock restaurants", e)
-            Resource.Success(getMockRestaurants())
+            Log.w(TAG, "Firestore restaurants fetch failed", e)
+            Resource.Success(emptyList())
         }
     }
 
     override suspend fun getTrendingFoods(): Resource<List<Food>> = withContext(Dispatchers.IO) {
-        val db = firestore ?: return@withContext Resource.Success(getMockTrendingFoods())
+        val db = firestore ?: return@withContext Resource.Success(emptyList())
         try {
-            // Fetch popular items
             val snapshot = db.collection("foods")
                 .whereEqualTo("popular", true)
                 .limit(10)
                 .get()
                 .await()
             val list = snapshot.toObjects(Food::class.java)
-            if (list.isEmpty()) {
-                Resource.Success(getMockTrendingFoods())
-            } else {
-                Resource.Success(list)
-            }
+            Resource.Success(list)
         } catch (e: Throwable) {
-            Log.w(TAG, "Firestore trending foods fetch failed, using fallback mock foods", e)
-            Resource.Success(getMockTrendingFoods())
+            Log.w(TAG, "Firestore trending foods fetch failed", e)
+            Resource.Success(emptyList())
         }
     }
-
-    // -- Offline Mocks --
-
-    private fun getMockOffers(): List<Offer> = listOf(
-        Offer("o1", "50% OFF on first order", "Use code WELCOME50", "https://mock.foodfusion.ai/banner1.png", 0L, null),
-        Offer("o2", "Free Delivery this weekend", "Min order value ₹200", "https://mock.foodfusion.ai/banner2.png", 0L, null),
-        Offer("o3", "Biryani Feast Specials", "Flat ₹100 off on select outlets", "https://mock.foodfusion.ai/banner3.png", 0L, null)
-    )
-
-    private fun getMockCategories(): List<Category> = listOf(
-        Category("c1", "Pizza", "https://mock.foodfusion.ai/pizza.png"),
-        Category("c2", "Burger", "https://mock.foodfusion.ai/burger.png"),
-        Category("c3", "Biryani", "https://mock.foodfusion.ai/biryani.png"),
-        Category("c4", "Chinese", "https://mock.foodfusion.ai/chinese.png"),
-        Category("c5", "Desserts", "https://mock.foodfusion.ai/desserts.png")
-    )
-
-    private fun getMockRestaurants(): List<Restaurant> = listOf(
-        Restaurant(id = "r1", name = "Pizza Palace", description = "Cheesy Italian Pizzas", imageUrl = "https://mock.foodfusion.ai/r1.png", rating = 4.5, deliveryTime = "25-30 mins", deliveryFee = 29.0, address = "MG Road", isOpen = true, categories = listOf("c1")),
-        Restaurant(id = "r2", name = "Burger Bistro", description = "Juicy Gourmet Burgers", imageUrl = "https://mock.foodfusion.ai/r2.png", rating = 4.2, deliveryTime = "20-25 mins", deliveryFee = 39.0, address = "Sector 15", isOpen = true, categories = listOf("c2")),
-        Restaurant(id = "r3", name = "Biryani House", description = "Authentic Mughlai Biryanis", imageUrl = "https://mock.foodfusion.ai/r3.png", rating = 4.7, deliveryTime = "35-40 mins", deliveryFee = 49.0, address = "Connaught Place", isOpen = true, categories = listOf("c3"))
-    )
-
-    private fun getMockTrendingFoods(): List<Food> = listOf(
-        Food(id = "f1", restaurantId = "r1", categoryId = "c1", name = "Margherita Pizza", description = "Fresh mozzarella and basil", price = 249.0, imageUrl = "https://mock.foodfusion.ai/f1.png", rating = 4.6, isAvailable = true, isVegetarian = true, ingredients = listOf("Cheese", "Tomato Sauce")),
-        Food(id = "f2", restaurantId = "r2", categoryId = "c2", name = "Cheese Burst Burger", description = "Loaded double patty burger", price = 189.0, imageUrl = "https://mock.foodfusion.ai/f2.png", rating = 4.3, isAvailable = true, isVegetarian = false, ingredients = listOf("Beef", "Cheese")),
-        Food(id = "f3", restaurantId = "r3", categoryId = "c3", name = "Chicken Dum Biryani", description = "Fragrant basmati rice with spices", price = 299.0, imageUrl = "https://mock.foodfusion.ai/f3.png", rating = 4.8, isAvailable = true, isVegetarian = false, ingredients = listOf("Chicken", "Rice"))
-    )
 }

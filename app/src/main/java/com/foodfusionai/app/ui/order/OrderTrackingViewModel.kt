@@ -6,6 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.foodfusionai.app.data.repository.OrderRepository
 import com.foodfusionai.app.utils.Resource
 import com.google.firebase.functions.FirebaseFunctions
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.foodfusionai.app.data.models.order.DeliveryLocation
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,10 +27,26 @@ class OrderTrackingViewModel(
 
     private var trackingJob: Job? = null
     private var currentOrderId: String? = null
+    
+    private val firestore = FirebaseFirestore.getInstance()
+    private var locationListener: ListenerRegistration? = null
 
     fun startTracking(orderId: String) {
         if (currentOrderId == orderId && trackingJob?.isActive == true) return
         currentOrderId = orderId
+        
+        locationListener?.remove()
+        locationListener = firestore.collection("deliveryLocations").document(orderId)
+            .addSnapshotListener { snapshot, error ->
+                if (snapshot != null && snapshot.exists()) {
+                    val lat = snapshot.getDouble("latitude") ?: 0.0
+                    val lng = snapshot.getDouble("longitude") ?: 0.0
+                    val updated = snapshot.getLong("updatedAt") ?: System.currentTimeMillis()
+                    _uiState.update { it.copy(driverLocation = DeliveryLocation(lat, lng, updated)) }
+                } else {
+                    _uiState.update { it.copy(driverLocation = null) }
+                }
+            }
         
         trackingJob?.cancel()
         trackingJob = viewModelScope.launch {
@@ -93,6 +112,11 @@ class OrderTrackingViewModel(
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        locationListener?.remove()
+        super.onCleared()
     }
 
     class Factory(

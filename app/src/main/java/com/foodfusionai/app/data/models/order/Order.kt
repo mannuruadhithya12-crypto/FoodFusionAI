@@ -34,7 +34,8 @@ data class Order(
     val estimatedDeliveryAt: Long? = null,
     val deliveryPartner: DeliveryPartner? = null,
     val deliveryLocation: DeliveryLocation? = null,
-    val statusHistory: List<OrderStatusHistory> = emptyList()
+    val statusHistory: List<OrderStatusHistory> = emptyList(),
+    val deliveryStatus: String? = null
 )
 
 data class DeliveryPartner(

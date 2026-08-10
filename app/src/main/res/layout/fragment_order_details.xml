@@ -35,6 +35,19 @@
         android:visibility="gone"
         android:layout_marginBottom="8dp"/>
 
+    <TextView
+        android:id="@+id/tvDelayWarning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Your order is taking a little longer than expected. We're on it!"
+        android:background="#FFF3E0"
+        android:textColor="#E65100"
+        android:textStyle="bold"
+        android:padding="12dp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginBottom="8dp"/>
+
     <ScrollView
         android:id="@+id/svOrderDetails"
         android:layout_width="match_parent"

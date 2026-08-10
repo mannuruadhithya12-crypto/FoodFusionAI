@@ -101,10 +101,34 @@ class OrderDetailsFragment : Fragment() {
             }
             binding.tvTimeline.text = timelineText.toString()
             
+            // Delay Warning Banner
+            val delayStatus = order.deliveryStatus
+            if (delayStatus == "DELAYED" || delayStatus == "CRITICAL" || delayStatus == "AT_RISK") {
+                binding.tvDelayWarning.visibility = View.VISIBLE
+                if (delayStatus == "CRITICAL") {
+                    binding.tvDelayWarning.text = "Your order is significantly delayed. Our team is working to resolve this."
+                } else {
+                    binding.tvDelayWarning.text = "Your order is taking a little longer than expected. We're on it!"
+                }
+            } else {
+                binding.tvDelayWarning.visibility = View.GONE
+            }
+            
             // Delivery Partner
             if (order.deliveryPartner != null) {
                 binding.cardDeliveryPartner.visibility = View.VISIBLE
-                binding.tvDeliveryPartnerDetails.text = "Name: ${order.deliveryPartner.name}\nPhone: ${order.deliveryPartner.phone}\nVehicle: ${order.deliveryPartner.vehicleNumber}"
+                val partnerText = StringBuilder()
+                partnerText.append("Name: ${order.deliveryPartner.name}\n")
+                partnerText.append("Phone: ${order.deliveryPartner.phone}\n")
+                partnerText.append("Vehicle: ${order.deliveryPartner.vehicleType} (${order.deliveryPartner.vehicleNumber})")
+                
+                val loc = state.driverLocation
+                if (loc != null) {
+                    partnerText.append("\nLive GPS: ${loc.latitude}, ${loc.longitude}")
+                } else if (order.orderStatus.name == "OUT_FOR_DELIVERY") {
+                    partnerText.append("\nLive GPS: Retrieving location...")
+                }
+                binding.tvDeliveryPartnerDetails.text = partnerText.toString()
             } else {
                 binding.cardDeliveryPartner.visibility = View.GONE
             }
