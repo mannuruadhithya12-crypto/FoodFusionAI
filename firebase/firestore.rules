@@ -1,103 +1,154 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read their own data
-    match /users/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId && request.resource.data.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId 
-        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['uid', 'createdAt']));
-      allow delete: if false; // Deletion handled by callable function deleteUserAccount
-      
-      // Addresses subcollection
-      match /addresses/{addressId} {
-        allow read: if request.auth != null && request.auth.uid == userId;
-        allow create: if request.auth != null && request.auth.uid == userId && request.resource.data.userId == userId;
-        allow update: if request.auth != null && request.auth.uid == userId
-          && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'createdAt']));
-        allow delete: if request.auth != null && request.auth.uid == userId;
-      }
+
+    // ── Helper functions ────────────────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
     }
-    
-    // Restaurants are publicly readable
-    match /restaurants/{restaurantId} {
-      allow read: if true;
-      allow write: if false; // Only admins can write
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
     }
-    
-    // Categories are publicly readable
-    match /categories/{categoryId} {
-      allow read: if true;
-      allow write: if false;
-    }
-    
-    // Foods are publicly readable
-    match /foods/{foodId} {
-      allow read: if true;
-      allow write: if false;
-    }
-    
-    // Orders can be read by the user who created them, and created by them.
-    match /orders/{orderId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      
-      // Prevent clients from directly modifying sensitive fields
-      allow update: if request.auth != null && request.auth.uid == resource.data.userId
-        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny([
-          'orderStatus', 'paymentStatus', 'subtotal', 'totalAmount', 
-          'deliveryFee', 'discount', 'userId', 'paymentReference', 
-          'deliveryPartner', 'deliveryLocation', 'statusHistory', 
-          'createdAt', 'estimatedDeliveryAt'
-        ]));
-    }
-    
-    // Carts are private to users
-    match /carts/{cartId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-    
-    // Favorites
-    match /favorites/{favoriteId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-    
-    // Driver tracking locations
-    match /deliveryLocations/{orderId} {
-      allow read: if request.auth != null; // Typically restricted to the ordering customer and admin, keeping it simpler here or matching order rules.
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.driverId;
-      allow update: if request.auth != null && request.auth.uid == request.resource.data.driverId;
+    function isResourceOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
     }
 
-    // Reviews
+    // ── Users ───────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read:   if isOwner(userId);
+      allow create: if isOwner(userId)
+                    && request.resource.data.uid == userId;
+      allow update: if isOwner(userId)
+                    && !request.resource.data.diff(resource.data)
+                        .affectedKeys().hasAny(['uid', 'createdAt']);
+      allow delete: if false; // handled by deleteUserAccount Cloud Function
+
+      match /addresses/{addressId} {
+        allow read:   if isOwner(userId);
+        allow create: if isOwner(userId)
+                      && request.resource.data.userId == userId;
+        allow update: if isOwner(userId)
+                      && !request.resource.data.diff(resource.data)
+                          .affectedKeys().hasAny(['userId', 'createdAt']);
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // ── Restaurants (public read, admin-only write) ─────────────────────────
+    match /restaurants/{restaurantId} {
+      allow read:  if true;
+      allow write: if false; // Cloud Functions / Admin SDK only
+    }
+
+    // ── Categories & Foods (public read) ────────────────────────────────────
+    match /categories/{categoryId} {
+      allow read:  if true;
+      allow write: if false;
+    }
+    match /foods/{foodId} {
+      allow read:  if true;
+      allow write: if false;
+    }
+
+    // ── Orders ──────────────────────────────────────────────────────────────
+    // Customers read/create their own orders.
+    // All sensitive field mutations go through Cloud Functions only.
+    match /orders/{orderId} {
+      allow read:   if isAuthenticated()
+                    && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated()
+                    && request.auth.uid == request.resource.data.userId;
+      allow update: if isAuthenticated()
+                    && request.auth.uid == resource.data.userId
+                    && !request.resource.data.diff(resource.data).affectedKeys()
+                        .hasAny([
+                          'orderStatus', 'paymentStatus',
+                          'subtotal', 'totalAmount', 'deliveryFee', 'discount',
+                          'userId', 'paymentReference',
+                          'deliveryPartner', 'deliveryLocation',
+                          'statusHistory', 'createdAt', 'estimatedDeliveryAt'
+                        ]);
+      allow delete: if false;
+    }
+
+    // ── Phase 16: deliveryLocations ─────────────────────────────────────────
+    // Written exclusively by the updateDriverLocation Cloud Function (Admin SDK).
+    // Customers may READ only the document for their own active order.
+    // Drivers may NOT write directly — the Cloud Function validates ownership.
+    // After isActive=false the document becomes invisible to customers.
+    match /deliveryLocations/{orderId} {
+      // Customer: read own active delivery only
+      allow read: if isAuthenticated()
+                  && exists(/databases/$(database)/documents/orders/$(orderId))
+                  && get(/databases/$(database)/documents/orders/$(orderId))
+                      .data.userId == request.auth.uid
+                  && resource.data.isActive == true;
+
+      // No direct client writes — updateDriverLocation Cloud Function uses Admin SDK
+      allow write: if false;
+    }
+
+    // ── Phase 16: deliveryZones (public read, admin-only write) ─────────────
+    match /deliveryZones/{zoneId} {
+      allow read:  if true;
+      allow write: if false; // Admin SDK / Console only
+    }
+
+    // ── Phase 16: locationAlerts (admin read, no client write) ──────────────
+    // Written by updateDriverLocation / flagSuspiciousLocation Cloud Functions.
+    match /locationAlerts/{alertId} {
+      allow read:  if false; // Admin SDK only (admin panel reads via service account)
+      allow write: if false;
+    }
+
+    // ── Carts ───────────────────────────────────────────────────────────────
+    match /carts/{cartId} {
+      allow read, write: if isAuthenticated()
+                         && request.auth.uid == resource.data.userId;
+      allow create:      if isAuthenticated()
+                         && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── Favorites ───────────────────────────────────────────────────────────
+    match /favorites/{favoriteId} {
+      allow read, write: if isAuthenticated()
+                         && request.auth.uid == resource.data.userId;
+      allow create:      if isAuthenticated()
+                         && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── Reviews ─────────────────────────────────────────────────────────────
     match /reviews/{reviewId} {
-      allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read:  if true;
+      allow write: if isAuthenticated()
+                   && request.auth.uid == request.resource.data.userId;
     }
-    
-    // Notifications
+
+    // ── Notifications ────────────────────────────────────────────────────────
     match /notifications/{notificationId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow read, write: if isAuthenticated()
+                         && request.auth.uid == resource.data.userId;
     }
-    
-    // Offers
+
+    // ── Offers & Coupons (public read) ───────────────────────────────────────
     match /offers/{offerId} {
-      allow read: if true;
+      allow read:  if true;
       allow write: if false;
     }
-    
-    // Coupons
     match /coupons/{couponId} {
-      allow read: if true;
+      allow read:  if true;
       allow write: if false;
     }
-    
-    // Analytics
+
+    // ── Analytics ────────────────────────────────────────────────────────────
     match /analytics/{analyticsId} {
-      allow create: if true; // Depending on requirements, could limit to authenticated users
-      allow read, write: if false;
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // ── processed_webhooks (idempotency store) ───────────────────────────────
+    match /processed_webhooks/{eventId} {
+      allow read, write: if false; // Cloud Functions only
     }
   }
 }

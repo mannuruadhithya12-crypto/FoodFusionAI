@@ -66,7 +66,10 @@ data class AddressSnapshot(
     val city: String = "",
     val state: String = "",
     val zipCode: String = "",
-    val instructions: String = ""
+    val instructions: String = "",
+    // Phase 16: coordinates snapshotted at order time for routing/ETA
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0
 ) {
     companion object {
         fun fromAddress(addr: Address): AddressSnapshot {
@@ -77,7 +80,9 @@ data class AddressSnapshot(
                 city = addr.city,
                 state = addr.state,
                 zipCode = addr.zipCode,
-                instructions = addr.instructions
+                instructions = addr.instructions,
+                latitude = addr.latitude,
+                longitude = addr.longitude
             )
         }
     }

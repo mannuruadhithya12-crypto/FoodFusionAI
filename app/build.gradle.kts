@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.google.services)
     alias(libs.plugins.navigation.safeargs)
+    // Phase 16: Injects MAPS_API_KEY from local.properties into BuildConfig and AndroidManifest
+    alias(libs.plugins.secrets.gradle)
 }
 
 android {
@@ -26,6 +28,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     buildTypes {
@@ -47,6 +50,23 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    // Phase 16: Secrets Gradle Plugin configuration.
+    // Reads MAPS_API_KEY from local.properties (gitignored) and injects it as:
+    //   • ${MAPS_API_KEY} in AndroidManifest.xml  (for the Maps meta-data tag)
+    //   • BuildConfig.MAPS_API_KEY in Kotlin code  (for RoutingService / RoutingService)
+    // The defaultPropertiesFileName points to secrets.defaults.properties which IS
+    // committed and holds a safe placeholder so the project compiles without a real key.
+}
+
+// Secrets plugin block must be at the top-level of build.gradle.kts (outside android {})
+secrets {
+    // Real keys go here — file is gitignored
+    propertiesFileName = "local.properties"
+    // Placeholder keys committed to source — project compiles without real Maps key
+    defaultPropertiesFileName = "secrets.defaults.properties"
+    // Only inject properties that start with MAPS_ to avoid leaking other local props
+    ignoreList.add("sdk.dir")
 }
 
 dependencies {
@@ -85,4 +105,9 @@ dependencies {
 
     // Razorpay
     implementation("com.razorpay:checkout:1.6.39")
+
+    // Phase 16: Google Maps, Places, and Location
+    implementation(libs.maps)
+    implementation(libs.places)
+    implementation(libs.play.services.location)
 }

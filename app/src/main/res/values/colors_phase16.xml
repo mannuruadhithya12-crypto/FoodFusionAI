@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Phase 16 — Light-mode colour definitions for map UI components.
+    Kept in a separate file to avoid merge conflicts with existing colors.xml.
+-->
+<resources>
+    <!-- Offline / stale GPS banner background in light mode -->
+    <color name="offline_banner_background">#FEF3C7</color>
+
+    <!-- Route polyline — Material Blue for light map -->
+    <color name="route_polyline_color">#1D4ED8</color>
+
+    <!-- ETA chip background -->
+    <color name="eta_chip_background">#DBEAFE</color>
+    <color name="eta_chip_text">#1E40AF</color>
+</resources>

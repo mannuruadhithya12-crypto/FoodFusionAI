@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -47,6 +48,15 @@ class OrderDetailsFragment : Fragment() {
 
         binding.btnCancelOrder.setOnClickListener {
             trackingViewModel.cancelOrder()
+        }
+
+        // Phase 16: navigate to live tracking map when order is active
+        binding.btnTrackLive.setOnClickListener {
+            if (orderId != null) {
+                val action = OrderDetailsFragmentDirections
+                    .actionOrderDetailsFragmentToLiveTrackingFragment(orderId)
+                findNavController().navigate(action)
+            }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -121,6 +131,16 @@ class OrderDetailsFragment : Fragment() {
             binding.btnCancelOrder.visibility = if (state.canCancel) View.VISIBLE else View.GONE
             binding.btnCancelOrder.isEnabled = !state.isCancelling
             binding.btnCancelOrder.text = if (state.isCancelling) "Cancelling..." else "Cancel Order"
+
+            // Phase 16: Track Live button — visible for active orders with a driver assigned
+            val activeStatuses = listOf(
+                com.foodfusionai.app.data.models.order.OrderStatus.OUT_FOR_DELIVERY,
+                com.foodfusionai.app.data.models.order.OrderStatus.READY_FOR_PICKUP,
+                com.foodfusionai.app.data.models.order.OrderStatus.PREPARING,
+                com.foodfusionai.app.data.models.order.OrderStatus.CONFIRMED
+            )
+            binding.btnTrackLive.visibility =
+                if (order.orderStatus in activeStatuses) View.VISIBLE else View.GONE
         } else {
             binding.svOrderDetails.visibility = View.GONE
         }

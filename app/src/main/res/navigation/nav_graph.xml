@@ -155,7 +155,17 @@
             app:argType="string"
             app:nullable="true"
             android:defaultValue="@null" />
+        <!-- Phase 16: navigate to map picker for coordinate selection -->
+        <action
+            android:id="@+id/action_addEditAddressFragment_to_mapPickerFragment"
+            app:destination="@id/mapPickerFragment" />
     </fragment>
+
+    <!-- Phase 16: Map Address Picker -->
+    <fragment
+        android:id="@+id/mapPickerFragment"
+        android:name="com.foodfusionai.app.ui.location.MapPickerFragment"
+        android:label="Choose Location" />
 
     <fragment
         android:id="@+id/accountSettingsFragment"
@@ -197,6 +207,20 @@
         android:id="@+id/orderDetailsFragment"
         android:name="com.foodfusionai.app.ui.order.OrderDetailsFragment"
         android:label="Order Details">
+        <argument
+            android:name="orderId"
+            app:argType="string" />
+        <!-- Phase 16: navigate to live tracking map -->
+        <action
+            android:id="@+id/action_orderDetailsFragment_to_liveTrackingFragment"
+            app:destination="@id/liveTrackingFragment" />
+    </fragment>
+
+    <!-- Phase 16: Live GPS tracking map -->
+    <fragment
+        android:id="@+id/liveTrackingFragment"
+        android:name="com.foodfusionai.app.ui.order.LiveTrackingFragment"
+        android:label="Track Order">
         <argument
             android:name="orderId"
             app:argType="string" />

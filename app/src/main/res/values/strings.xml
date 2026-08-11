@@ -51,4 +51,63 @@
     
     <!-- Razorpay -->
     <string name="razorpay_key_id">rzp_test_TNEufRBXoxVAip</string>
+
+    <!-- Phase 16: Location & Maps -->
+    <string name="location_permission_rationale">Location permission is required to find restaurants near you and calculate accurate delivery time.</string>
+    <string name="location_permission_denied_permanent">Location access was permanently denied. Open Settings to enable it.</string>
+    <string name="location_services_disabled">Please enable location services so FoodFusion can find restaurants near you.</string>
+    <string name="location_enable_button">Enable Location</string>
+    <string name="location_open_settings">Open Settings</string>
+    <string name="location_allow_button">Allow</string>
+    <string name="location_not_now">Not now</string>
+    <string name="location_finding">Finding your location…</string>
+    <string name="location_unavailable">Location unavailable</string>
+    <string name="location_updated_just_now">Updated just now</string>
+    <string name="delivering_to">Delivering to</string>
+    <string name="select_location">Select location</string>
+
+    <!-- Phase 16: Map Picker -->
+    <string name="map_picker_title">Choose Delivery Location</string>
+    <string name="map_picker_search_hint">Search for an area, street name…</string>
+    <string name="map_picker_move_hint">Move the map to select a location</string>
+    <string name="map_picker_finding_address">Finding address…</string>
+    <string name="map_picker_confirm">Confirm Location</string>
+    <string name="map_picker_my_location">Move to my current location</string>
+    <string name="map_picker_location_confirmed">📍 Location on map confirmed</string>
+    <string name="map_picker_pick_on_map">📍 Pick Location on Map</string>
+    <string name="content_description_map">Delivery location map</string>
+    <string name="content_description_centre_pin">Map pin showing selected location</string>
+
+    <!-- Phase 16: Live Tracking -->
+    <string name="tracking_title">Track Order</string>
+    <string name="tracking_status_confirmed">Order confirmed</string>
+    <string name="tracking_status_preparing">Restaurant is preparing your order</string>
+    <string name="tracking_status_ready">Order ready — driver picking up</string>
+    <string name="tracking_status_out_for_delivery">Order on the way</string>
+    <string name="tracking_status_delivered">Order delivered 🎉</string>
+    <string name="tracking_status_cancelled">Order cancelled</string>
+    <string name="tracking_driver_info_format">🚗  %1$s · %2$s</string>
+    <string name="tracking_navigate">Navigate</string>
+    <string name="tracking_route_fallback">⚠ Route estimated — road data unavailable</string>
+    <string name="tracking_offline_prefix">📵 Offline — </string>
+    <string name="tracking_stale_prefix">⚡ </string>
+    <string name="tracking_location_updating">Driver location updating…</string>
+    <string name="tracking_cancel_title">Cancel Order</string>
+    <string name="tracking_cancel_message">Are you sure you want to cancel this order?</string>
+    <string name="tracking_cancel_confirm">Yes, Cancel</string>
+    <string name="tracking_cancelling">Cancelling…</string>
+    <string name="tracking_track_live">Track Live</string>
+
+    <!-- Phase 16: Delivery validation -->
+    <string name="delivery_outside_range">This address is outside the delivery range.</string>
+    <string name="delivery_validating">Checking delivery availability…</string>
+    <string name="delivery_fee_free">FREE</string>
+
+    <!-- Phase 16: Address -->
+    <string name="address_add_title">Add Address</string>
+    <string name="address_edit_title">Edit Address</string>
+    <string name="address_saved">Address saved successfully</string>
+    <string name="address_label_home">Home</string>
+    <string name="address_label_work">Work</string>
+    <string name="address_label_other">Other</string>
 </resources>

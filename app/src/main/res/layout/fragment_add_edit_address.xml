@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:colorBackground">
@@ -73,6 +74,28 @@
                 android:text="Address Details"
                 android:textAppearance="?attr/textAppearanceTitleMedium"
                 android:textStyle="bold" />
+
+            <!-- Phase 16: Pick on Map button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPickOnMap"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="📍 Pick Location on Map"
+                android:contentDescription="Open map to pick delivery location" />
+
+            <!-- Phase 16: label shown after a location is confirmed on the map -->
+            <TextView
+                android:id="@+id/tvPickedLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="?attr/colorPrimary"
+                android:textAppearance="?attr/textAppearanceLabelMedium"
+                android:visibility="gone"
+                tools:text="📍 Location on map confirmed"
+                tools:visibility="visible" />
 
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/tgAddressType"

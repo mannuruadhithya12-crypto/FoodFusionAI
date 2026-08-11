@@ -171,8 +171,18 @@
                 android:text="Cancel Order"
                 android:textColor="@color/design_default_color_error"
                 style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="8dp"
                 android:visibility="gone"/>
+
+            <!-- Phase 16: open live GPS tracking map -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTrackLive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🗺  Track Live"
+                android:layout_marginBottom="24dp"
+                android:contentDescription="Open live delivery tracking map"
+                android:visibility="gone" />
                 
         </LinearLayout>
     </ScrollView>

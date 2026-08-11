@@ -69,7 +69,12 @@ class AddressViewModel(
         state: String,
         zipCode: String,
         landmark: String,
-        instructions: String
+        instructions: String,
+        // Phase 16: real coordinates from map picker (0.0 when not set)
+        latitude: Double = 0.0,
+        longitude: Double = 0.0,
+        geohash: String = "",
+        placeId: String = ""
     ) {
         val errors = mutableMapOf<String, String>()
         
@@ -98,7 +103,12 @@ class AddressViewModel(
                 state = state.trim(),
                 zipCode = zipCode.trim(),
                 landmark = landmark.trim(),
-                instructions = instructions.trim()
+                instructions = instructions.trim(),
+                // Phase 16: real coordinates
+                latitude = latitude,
+                longitude = longitude,
+                geohash = geohash,
+                placeId = placeId
             )
 
             val result = if (id.isNullOrEmpty()) {

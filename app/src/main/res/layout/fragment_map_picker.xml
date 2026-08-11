@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Phase 16 — Map Address Picker
+    Full-screen map with a centre pin, reverse-geocoded address label,
+    search field, my-location FAB, and a confirm button.
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- ── Top AppBar ──────────────────────────────────────────────────────── -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:elevation="4dp"
+            app:navigationIcon="@android:drawable/ic_menu_revert"
+            app:title="Choose Delivery Location" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- ── Full-screen Map ────────────────────────────────────────────────── -->
+    <fragment
+        android:id="@+id/mapContainer"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="Map for selecting delivery address"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <!-- ── Centre pin image (stationary; map moves underneath) ───────────── -->
+    <ImageView
+        android:id="@+id/ivCentrePin"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/ic_location"
+        android:contentDescription="Map pin"
+        app:tint="?attr/colorPrimary" />
+
+    <!-- ── Search field (top-centre overlay) ─────────────────────────────── -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="80dp"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="4dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSearchAddress"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:hint="Search for an area, street name…"
+            android:imeOptions="actionSearch"
+            android:inputType="textPostalAddress"
+            android:paddingHorizontal="20dp"
+            android:singleLine="true"
+            android:background="@null" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ── Geocoding progress indicator (small, top-right) ───────────────── -->
+    <ProgressBar
+        android:id="@+id/progressGeocoding"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="24dp"
+        android:layout_marginTop="84dp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <!-- ── My-location FAB ────────────────────────────────────────────────── -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabMyLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:layout_marginBottom="140dp"
+        android:contentDescription="Move to my current location"
+        android:src="@drawable/ic_location"
+        app:fabSize="mini"
+        app:tint="@android:color/white" />
+
+    <!-- ── Bottom sheet — address + confirm ──────────────────────────────── -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardBottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="0dp"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Location icon + address text -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_location"
+                    android:contentDescription="Location pin"
+                    app:tint="?attr/colorPrimary" />
+
+                <TextView
+                    android:id="@+id/tvResolvedAddress"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Move the map to select a location"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+
+            </LinearLayout>
+
+            <!-- Confirm button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnConfirmLocation"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="16dp"
+                android:text="Confirm Location"
+                android:textSize="16sp"
+                android:enabled="false" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

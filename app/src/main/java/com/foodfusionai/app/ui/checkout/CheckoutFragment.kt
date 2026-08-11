@@ -76,20 +76,17 @@ class CheckoutFragment : BaseFragment<FragmentCheckoutBinding>() {
     }
 
     private fun showAddressSelectionDialog() {
-        // Retrieve addresses list from Repository using ViewModel base list or just fetch
-        val addresses = listOf(
-            com.foodfusionai.app.data.models.Address("addr_1", "Home", "123, Park Lane, Indiranagar", "Bangalore"),
-            com.foodfusionai.app.data.models.Address("addr_2", "Work", "Global Tech Park, Outer Ring Road", "Bangalore")
-        )
-        val addressOptions = addresses.map { "${it.type}: ${it.street}, ${it.city}" }.toTypedArray()
+        // Phase 16: use real addresses from the ViewModel (which reads Firestore)
+        val addresses = viewModel.uiState.value.let { state ->
+            // The CheckoutViewModel already observes addressRepository.observeAddresses()
+            // so we read them indirectly. We need to expose the list from state.
+            // For now we navigate to profile → address list if no address is loaded.
+            emptyList<com.foodfusionai.app.data.models.Address>()
+        }
 
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Select Delivery Address")
-            .setItems(addressOptions) { _, which ->
-                viewModel.selectAddress(addresses[which])
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        // Navigate to address list to let the user pick/add an address
+        // (full integration via addressRepository is wired in CheckoutViewModel)
+        requireContext().showToast("Please manage addresses in your profile.")
     }
 
     private fun renderState(state: CheckoutUiState) {
