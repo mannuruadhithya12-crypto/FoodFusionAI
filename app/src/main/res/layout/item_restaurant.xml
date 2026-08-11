@@ -49,7 +49,7 @@
             android:textColor="?attr/colorOnSurface"
             android:textStyle="bold"
             app:drawableStartCompat="@drawable/ic_star"
-            app:drawableTint="#FFC107"
+            app:drawableTint="@color/color_rating_star"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

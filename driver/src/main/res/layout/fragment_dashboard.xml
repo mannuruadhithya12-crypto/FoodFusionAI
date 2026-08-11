@@ -185,7 +185,7 @@
                         android:id="@+id/btnDeclineOffer"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="0dp"
-                        android:layout_height="48dp"
+                        android:layout_height="56dp"
                         android:layout_marginEnd="8dp"
                         android:layout_weight="1"
                         android:text="DECLINE" />
@@ -193,7 +193,7 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAcceptOffer"
                         android:layout_width="0dp"
-                        android:layout_height="48dp"
+                        android:layout_height="56dp"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:text="ACCEPT" />
@@ -239,7 +239,7 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnResumeActive"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="56dp"
                     android:layout_marginTop="16dp"
                     android:text="OPEN ACTIVE DELIVERY" />
             </LinearLayout>

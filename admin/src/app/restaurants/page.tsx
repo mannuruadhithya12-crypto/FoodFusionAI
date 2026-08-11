@@ -89,14 +89,14 @@ export default function RestaurantsPage() {
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden border">
-        <table className="w-full text-left border-collapse">
+        <table>
           <thead>
-            <tr className="bg-gray-50 border-b">
-              <th className="p-4 font-semibold text-gray-600">Logo</th>
-              <th className="p-4 font-semibold text-gray-600">Name</th>
-              <th className="p-4 font-semibold text-gray-600">Address</th>
-              <th className="p-4 font-semibold text-gray-600">Status</th>
-              <th className="p-4 font-semibold text-gray-600 text-right">Actions</th>
+            <tr>
+              <th>Logo</th>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Status</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -104,20 +104,20 @@ export default function RestaurantsPage() {
               <tr><td colSpan={5} className="p-4 text-center text-gray-500">No restaurants available</td></tr>
             ) : (
               restaurants.map(rest => (
-                <tr key={rest.id} className="border-b hover:bg-gray-50">
-                  <td className="p-4">
+                <tr key={rest.id} className="hover:bg-slate-50 transition-colors">
+                  <td>
                     {rest.imageUrl ? <Image src={rest.imageUrl} alt={rest.name} width={40} height={40} className="h-10 w-10 object-cover rounded-full" /> : <div className="h-10 w-10 bg-gray-200 rounded-full"></div>}
                   </td>
-                  <td className="p-4 font-medium">{rest.name}</td>
-                  <td className="p-4 text-gray-600">{rest.address}, {rest.city}</td>
-                  <td className="p-4">
+                  <td className="font-semibold text-gray-800">{rest.name}</td>
+                  <td className="text-gray-500">{rest.address}</td>
+                  <td>
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${rest.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                       {rest.isOpen ? 'Active' : 'Suspended'}
                     </span>
                   </td>
-                  <td className="p-4 text-right space-x-3 flex justify-end">
-                    <button onClick={() => handleEdit(rest)} className="text-blue-600 hover:text-blue-800"><Edit size={18} /></button>
-                    <button onClick={() => handleDelete(rest.id)} className="text-red-600 hover:text-red-800"><Trash2 size={18} /></button>
+                  <td className="text-right">
+                    <button onClick={() => handleEdit(rest)} className="text-blue-600 hover:text-blue-800 mr-3">Edit</button>
+                    <button onClick={() => handleDelete(rest.id)} className="text-red-600 hover:text-red-800">Delete</button>
                   </td>
                 </tr>
               ))

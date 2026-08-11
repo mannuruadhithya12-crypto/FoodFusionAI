@@ -10,7 +10,7 @@
         android:id="@+id/mapContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#E0E0E0"
+        android:background="?attr/colorSurfaceVariant"
         app:layout_constraintBottom_toTopOf="@+id/scrollControls"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,7 +23,7 @@
             android:layout_gravity="center"
             android:text="Google Map View Placeholder\n(Live GPS Tracking Active)"
             android:gravity="center"
-            android:textColor="#757575"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:textStyle="bold" />
     </FrameLayout>
 

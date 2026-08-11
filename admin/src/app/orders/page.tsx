@@ -59,29 +59,29 @@ export default function OrdersPage() {
         
         {/* Orders List */}
         <div className="lg:col-span-2 bg-white shadow rounded-lg overflow-hidden border">
-          <table className="w-full text-left border-collapse">
+          <table>
             <thead>
-              <tr className="bg-gray-50 border-b">
-                <th className="p-4 font-semibold text-gray-600">Order ID</th>
-                <th className="p-4 font-semibold text-gray-600">Amount</th>
-                <th className="p-4 font-semibold text-gray-600">Payment</th>
-                <th className="p-4 font-semibold text-gray-600">Status</th>
-                <th className="p-4 font-semibold text-gray-600">Time</th>
+              <tr>
+                <th>Order ID</th>
+                <th>Amount</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Time</th>
               </tr>
             </thead>
             <tbody>
               {orders.length === 0 && <tr><td colSpan={5} className="p-4 text-center text-gray-500">No orders yet</td></tr>}
               {orders.map(order => (
-                <tr key={order.id} onClick={() => setSelectedOrder(order)} className={`border-b hover:bg-blue-50 cursor-pointer ${selectedOrder?.id === order.id ? 'bg-blue-50' : ''}`}>
-                  <td className="p-4 font-medium text-sm">{order.id.slice(0,8).toUpperCase()}...</td>
-                  <td className="p-4">₹{order.totalAmount}</td>
-                  <td className="p-4">
+                <tr key={order.id} onClick={() => setSelectedOrder(order)} className={`cursor-pointer hover:bg-slate-50 transition-colors ${selectedOrder?.id === order.id ? 'bg-slate-50' : ''}`}>
+                  <td className="font-medium text-sm">{order.id.slice(0,8).toUpperCase()}...</td>
+                  <td>₹{order.totalAmount}</td>
+                  <td>
                     <span className={`text-xs font-bold ${order.paymentStatus === 'SUCCESS' ? 'text-green-600' : 'text-red-600'}`}>
                       {order.paymentStatus}
                     </span>
                   </td>
-                  <td className="p-4">{getStatusBadge(order.orderStatus)}</td>
-                  <td className="p-4 text-sm text-gray-500">
+                  <td>{getStatusBadge(order.orderStatus)}</td>
+                  <td className="text-sm text-gray-500">
                     {order.createdAt ? new Date(order.createdAt).toLocaleTimeString() : 'N/A'}
                   </td>
                 </tr>

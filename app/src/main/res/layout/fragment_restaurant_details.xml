@@ -40,7 +40,7 @@
                 android:layout_height="48dp"
                 android:layout_margin="16dp"
                 android:background="@drawable/bg_circle"
-                android:backgroundTint="#80000000"
+                android:backgroundTint="@color/color_scrim"
                 android:src="@drawable/ic_arrow_back"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -54,7 +54,7 @@
                 android:layout_height="48dp"
                 android:layout_margin="16dp"
                 android:background="@drawable/bg_circle"
-                android:backgroundTint="#80000000"
+                android:backgroundTint="@color/color_scrim"
                 android:src="@android:drawable/btn_star"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -139,7 +139,7 @@
                             android:background="?attr/selectableItemBackground"
                             android:padding="4dp"
                             app:drawableStartCompat="@drawable/ic_star"
-                            app:drawableTint="#FFC107" />
+                            app:drawableTint="@color/color_rating_star" />
 
                         <View
                             android:layout_width="1dp"

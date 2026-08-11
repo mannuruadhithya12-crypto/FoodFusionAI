@@ -253,7 +253,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Grand Total"
-                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            android:textAppearance="?attr/textAppearanceTitleLarge"
                             android:textColor="?attr/colorOnSurface"
                             android:textStyle="bold" />
 
@@ -263,8 +263,8 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:text="₹0"
-                            android:textAppearance="?attr/textAppearanceTitleMedium"
-                            android:textColor="?attr/colorOnSurface"
+                            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                            android:textColor="?attr/colorPrimary"
                             android:textStyle="bold" />
                     </RelativeLayout>
 
@@ -287,8 +287,10 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCheckoutProceed"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="56dp"
             android:text="Proceed to Checkout"
+            android:textSize="16sp"
+            app:cornerRadius="12dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

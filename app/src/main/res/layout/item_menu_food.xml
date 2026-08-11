@@ -67,7 +67,7 @@
                 android:textAppearance="?attr/textAppearanceLabelMedium"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 app:drawableStartCompat="@drawable/ic_star"
-                app:drawableTint="#FFC107" />
+                app:drawableTint="@color/color_rating_star" />
 
         </LinearLayout>
 
@@ -114,7 +114,7 @@
                 android:id="@+id/tvUnavailableBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#80000000"
+                android:background="@color/color_scrim"
                 android:paddingHorizontal="4dp"
                 android:paddingVertical="2dp"
                 android:text="UNAVAILABLE"

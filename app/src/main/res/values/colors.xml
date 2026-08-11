@@ -85,4 +85,10 @@
     
     <!-- Launcher background color -->
     <color name="deep_orange_500">#FF5722</color>
+
+    <!-- UI Semantic Colors -->
+    <color name="color_scrim">#80000000</color>
+    <color name="color_scrim_light">#40000000</color>
+    <color name="color_divider">#1F000000</color>
+    <color name="color_divider_dark">#1FFFFFFF</color>
 </resources>

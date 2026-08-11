@@ -70,14 +70,14 @@ export default function UsersPage() {
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden border">
-        <table className="w-full text-left border-collapse">
+        <table>
           <thead>
-            <tr className="bg-gray-50 border-b">
-              <th className="p-4 font-semibold text-gray-600">User Details</th>
-              <th className="p-4 font-semibold text-gray-600">Contact</th>
-              <th className="p-4 font-semibold text-gray-600">Status</th>
-              <th className="p-4 font-semibold text-gray-600">Joined</th>
-              <th className="p-4 font-semibold text-gray-600 text-right">Actions</th>
+            <tr>
+              <th>User Details</th>
+              <th>Contact</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -85,40 +85,37 @@ export default function UsersPage() {
               <tr><td colSpan={5} className="p-4 text-center text-gray-500">No users found</td></tr>
             ) : (
               filteredUsers.map(user => (
-                <tr key={user.id} className="border-b hover:bg-gray-50">
-                  <td className="p-4">
+                <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                  <td>
                     <div className="flex items-center space-x-3">
                       <div className="h-10 w-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">
                         {user.name ? user.name.charAt(0).toUpperCase() : <Mail size={16}/>}
                       </div>
                       <div>
-                        <p className="font-medium">{user.name || "Unknown"}</p>
+                        <p className="font-medium text-gray-800">{user.name || "Unknown"}</p>
                         <p className="text-xs text-gray-500">ID: {user.id.slice(0,8)}...</p>
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 text-sm">
-                    <p>{user.email}</p>
+                  <td className="text-sm">
+                    <p className="text-gray-800">{user.email}</p>
                     <p className="text-gray-500">{user.phone || "No phone"}</p>
                   </td>
-                  <td className="p-4">
+                  <td>
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${user.isSuspended ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                       {user.isSuspended ? 'Suspended' : 'Active'}
                     </span>
                   </td>
-                  <td className="p-4 text-sm text-gray-500">
+                  <td className="text-sm text-gray-500">
                     {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                   </td>
-                  <td className="p-4 text-right">
-                    {user.isSuspended ? (
-                      <button onClick={() => toggleUserSuspension(user.id, true)} className="text-green-600 hover:text-green-800 flex items-center justify-end space-x-1 ml-auto">
-                        <UserCheck size={16} /> <span>Reactivate</span>
-                      </button>
-                    ) : (
-                      <button onClick={() => toggleUserSuspension(user.id, false)} className="text-red-600 hover:text-red-800 flex items-center justify-end space-x-1 ml-auto">
-                        <UserX size={16} /> <span>Suspend</span>
-                      </button>
-                    )}
+                  <td className="text-right">
+                    <button 
+                      onClick={() => toggleUserSuspension(user.id, user.isSuspended || false)}
+                      className={`flex items-center space-x-1 ml-auto ${user.isSuspended ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'}`}
+                    >
+                      {user.isSuspended ? <><UserCheck size={16} /> <span>Reactivate</span></> : <><UserX size={16} /> <span>Suspend</span></>}
+                    </button>
                   </td>
                 </tr>
               ))
