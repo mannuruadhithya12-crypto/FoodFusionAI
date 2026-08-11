@@ -11,6 +11,7 @@ import com.foodfusionai.app.utils.Resource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -145,12 +146,13 @@ class CheckoutViewModelTest {
 
     class MockAddressRepository : AddressRepository {
         var addressesList = listOf(Address("addr_1", "Home", "123, Park Street", "Bangalore"))
-        override suspend fun getAddresses(): Resource<List<Address>> {
-            return Resource.Success(addressesList)
-        }
+        override fun observeAddresses(): Flow<Resource<List<Address>>> = flowOf(Resource.Success(addressesList))
         override suspend fun addAddress(address: Address): Resource<Unit> {
             return Resource.Success(Unit)
         }
+        override suspend fun updateAddress(address: Address): Resource<Unit> = Resource.Success(Unit)
+        override suspend fun deleteAddress(addressId: String): Resource<Unit> = Resource.Success(Unit)
+        override suspend fun setDefaultAddress(addressId: String): Resource<Unit> = Resource.Success(Unit)
     }
 
     class MockCouponRepository : CouponRepository {

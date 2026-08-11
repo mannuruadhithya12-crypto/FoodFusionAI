@@ -45,3 +45,5 @@ secrets.properties
 # Kotlin compiler cache
 .kotlin/
 
+firebase/functions/node_modules
+.gradle
