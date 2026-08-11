@@ -1,5 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { issueOrderRewards } from "../utils/rewardSystem";
 
 // Simple helpers to verify partner role and ownership of the restaurant
 async function verifyPartnerAccess(uid: string, restaurantId: string) {
@@ -233,6 +234,11 @@ export const partnerUpdateOrderStatus = functions.https.onCall(async (data, cont
                 timestamp: admin.firestore.FieldValue.serverTimestamp(),
                 changes: { previousStatus: currentStatus, currentStatus: newStatus }
             });
+
+            if (newStatus === "COMPLETED") {
+                const totalAmount = orderData?.totalAmount || 0;
+                await issueOrderRewards(db, transaction, orderData?.userId, orderId, totalAmount);
+            }
         });
 
         return { success: true, message: `Order status updated to ${newStatus} successfully.` };

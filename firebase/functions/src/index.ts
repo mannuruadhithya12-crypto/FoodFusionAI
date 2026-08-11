@@ -8,6 +8,7 @@ export { verifyRazorpayPayment } from "./razorpay/verifyPayment";
 export { razorpayWebhook } from "./razorpay/webhook";
 export { cancelOrder } from "./order/cancelOrder";
 export { updateOrderStatus } from "./order/updateOrderStatus";
+export { createOrder } from "./order/createOrder";
 export { onOrderStatusUpdated } from "./order/fcmNotification";
 export { validateCoupon } from "./order/validateCoupon";
 export { setDefaultAddress } from "./user/setDefaultAddress";
@@ -21,7 +22,6 @@ export { interactReview } from "./reviews/interactReview";
 export { bootstrapAdmin } from "./admin/bootstrapAdmin";
 
 // Driver Platform Functions
-export { assignDriverToOrder } from "./order/assignDriverToOrder";
 export { acceptDeliveryAssignment } from "./order/acceptDeliveryAssignment";
 export { declineDeliveryAssignment } from "./order/declineDeliveryAssignment";
 export { updateDeliveryStatus } from "./order/updateDeliveryStatus";

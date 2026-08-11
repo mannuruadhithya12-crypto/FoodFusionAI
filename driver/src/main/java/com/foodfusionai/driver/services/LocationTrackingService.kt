@@ -52,7 +52,7 @@ class LocationTrackingService : Service() {
             return START_NOT_STICKY
         }
 
-        if (orderId != null && driverId != null) {
+        if (driverId != null) {
             this.currentOrderId = orderId
             this.driverId = driverId
             startForegroundServiceCompat()
@@ -98,7 +98,6 @@ class LocationTrackingService : Service() {
     }
 
     private fun updateLocationInFirestore(location: Location) {
-        val orderId = currentOrderId ?: return
         val driverId = this.driverId ?: return
 
         serviceScope.launch {
@@ -113,7 +112,16 @@ class LocationTrackingService : Service() {
             )
 
             try {
-                db.collection("deliveryLocations").document(orderId).set(locationData).await()
+                // Update canonical driver location
+                db.collection("drivers").document(driverId).update(
+                    mapOf("lastLocation" to locationData)
+                ).await()
+
+                // If currently delivering an order, update delivery route tracking
+                currentOrderId?.let { orderId ->
+                    db.collection("deliveryLocations").document(orderId).set(locationData).await()
+                }
+                
                 Log.d("LocationService", "Updated location: ${location.latitude}, ${location.longitude}")
             } catch (e: Exception) {
                 Log.e("LocationService", "Failed to update location in Firestore", e)
@@ -183,10 +191,10 @@ class LocationTrackingService : Service() {
 
         const val ACTION_STOP = "action_stop"
 
-        fun start(context: Context, orderId: String, driverId: String) {
+        fun start(context: Context, driverId: String, orderId: String? = null) {
             val intent = Intent(context, LocationTrackingService::class.java).apply {
-                putExtra(EXTRA_ORDER_ID, orderId)
                 putExtra(EXTRA_DRIVER_ID, driverId)
+                if (orderId != null) putExtra(EXTRA_ORDER_ID, orderId)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)

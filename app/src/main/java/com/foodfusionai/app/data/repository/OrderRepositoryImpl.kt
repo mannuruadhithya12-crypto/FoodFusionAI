@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
+import com.google.firebase.functions.FirebaseFunctions
 
 class OrderRepositoryImpl : OrderRepository {
 
@@ -25,47 +26,41 @@ class OrderRepositoryImpl : OrderRepository {
     override fun createOrder(order: Order): Flow<Resource<Order>> = flow {
         emit(Resource.Loading)
         
-        val db = firestore
-        if (db == null) {
-            // Simulated local memory fallback if Firebase is not properly initialized
-            emit(Resource.Success(order))
-            return@flow
-        }
-
         try {
-            // IDEMPOTENCY CHECK: Ensure we don't recreate an order for the same successful payment reference
-            if (order.paymentReference.isNotBlank()) {
-                val existingOrders = db.collection("orders")
-                    .whereEqualTo("paymentReference", order.paymentReference)
-                    .get()
-                    .await()
-                
-                if (!existingOrders.isEmpty) {
-                    val existingOrder = existingOrders.documents[0].toObject(Order::class.java)
-                    if (existingOrder != null) {
-                        Log.d("OrderRepositoryImpl", "Idempotency hit. Order already exists for reference.")
-                        emit(Resource.Success(existingOrder))
-                        return@flow
-                    }
-                }
-            }
-
-            val documentRef = if (order.orderId.isEmpty()) {
-                db.collection("orders").document()
-            } else {
-                db.collection("orders").document(order.orderId)
-            }
-            
-            val orderToSave = order.copy(
-                orderId = documentRef.id,
-                updatedAt = System.currentTimeMillis()
+            val functions = FirebaseFunctions.getInstance()
+            val data = hashMapOf(
+                "restaurantId" to order.restaurantId,
+                "items" to order.items.map {
+                    hashMapOf(
+                        "foodId" to it.foodId,
+                        "quantity" to it.quantity
+                    )
+                },
+                "couponCode" to null, // Can be extended to read from order object if available
+                "deliveryAddress" to hashMapOf(
+                    "id" to (order.addressSnapshot?.id ?: ""),
+                    "type" to (order.addressSnapshot?.type ?: "Home"),
+                    "street" to (order.addressSnapshot?.street ?: ""),
+                    "city" to (order.addressSnapshot?.city ?: "")
+                )
             )
             
-            documentRef.set(orderToSave).await()
-            emit(Resource.Success(orderToSave))
+            val result = functions.getHttpsCallable("createOrder").call(data).await()
+            val responseMap = result.data as? Map<String, Any>
             
+            if (responseMap != null && responseMap.containsKey("orderId")) {
+                val orderId = responseMap["orderId"] as String
+                val createdOrder = order.copy(
+                    orderId = orderId,
+                    orderStatus = com.foodfusionai.app.data.models.order.OrderStatus.PENDING_PAYMENT,
+                    paymentStatus = com.foodfusionai.app.data.models.order.PaymentStatus.PENDING
+                )
+                emit(Resource.Success(createdOrder))
+            } else {
+                emit(Resource.Error("Invalid response from server"))
+            }
         } catch (e: Exception) {
-            Log.e("OrderRepositoryImpl", "Failed to create order", e)
+            Log.e("OrderRepositoryImpl", "Failed to create order via function", e)
             emit(Resource.Error(e.message ?: "Failed to create order"))
         }
     }

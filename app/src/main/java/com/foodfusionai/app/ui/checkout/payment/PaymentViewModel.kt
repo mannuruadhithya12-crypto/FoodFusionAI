@@ -44,27 +44,43 @@ class PaymentViewModel(
     fun startPaymentFlow(request: PaymentRequest, orderSnapshot: Order) {
         pendingOrderSnapshot = orderSnapshot
         coroutineScope.launch {
-            paymentRepository.initiatePayment(request).collect { res ->
-                when (res) {
-                    is Resource.Loading -> _uiState.update { it.copy(isProcessing = true, error = null) }
+            _uiState.update { it.copy(isProcessing = true, error = null) }
+            
+            // 1. Create the order first (Server sets it to PENDING)
+            orderRepository.createOrder(orderSnapshot).collect { orderRes ->
+                when (orderRes) {
                     is Resource.Success -> {
-                        val result = res.data
-                        if (result is PaymentResult.RequiresAction) {
-                            // The fragment will observe this and launch Checkout
-                            _uiState.update { it.copy(isProcessing = false, paymentResult = result) }
-                        } else if (result is PaymentResult.Success) {
-                            verifyAndCreateOrder(result.transactionId, result.referenceId, result.signature, result.amount)
-                        } else {
-                            // Failed or Cancelled - Cart is naturally preserved as we do not clear it
-                            _uiState.update { it.copy(isProcessing = false, paymentResult = result) }
+                        val createdOrder = orderRes.data!!
+                        val newRequest = request.copy(checkoutReference = createdOrder.orderId)
+                        
+                        // 2. Initiate Payment with the DB orderId as reference
+                        paymentRepository.initiatePayment(newRequest).collect { res ->
+                            when (res) {
+                                is Resource.Loading -> { /* Keep processing */ }
+                                is Resource.Success -> {
+                                    val result = res.data
+                                    if (result is PaymentResult.RequiresAction) {
+                                        _uiState.update { it.copy(isProcessing = false, paymentResult = result) }
+                                    } else if (result is PaymentResult.Success) {
+                                        verifyPayment(result.transactionId, result.referenceId, result.signature, result.amount, createdOrder)
+                                    } else {
+                                        _uiState.update { it.copy(isProcessing = false, paymentResult = result) }
+                                    }
+                                }
+                                is Resource.Error -> {
+                                    _uiState.update { it.copy(isProcessing = false, error = res.message) }
+                                }
+                                is Resource.Empty -> {
+                                    _uiState.update { it.copy(isProcessing = false) }
+                                }
+                            }
                         }
                     }
                     is Resource.Error -> {
-                        _uiState.update { it.copy(isProcessing = false, error = res.message) }
+                        _uiState.update { it.copy(isProcessing = false, error = "Order creation failed: ${orderRes.message}") }
                     }
-                    is Resource.Empty -> {
-                        _uiState.update { it.copy(isProcessing = false) }
-                    }
+                    is Resource.Loading -> {}
+                    is Resource.Empty -> {}
                 }
             }
         }
@@ -78,11 +94,12 @@ class PaymentViewModel(
             is RazorpayCallbackResult.Success -> {
                 _uiState.update { it.copy(isProcessing = true) }
                 coroutineScope.launch {
-                    verifyAndCreateOrder(
+                    verifyPayment(
                         transactionId = callbackResult.paymentId,
-                        referenceId = referenceId,
+                        referenceId = referenceId, // This is our DB orderId now
                         signature = callbackResult.signature,
-                        amount = amount
+                        amount = amount,
+                        order = pendingOrderSnapshot
                     )
                 }
             }
@@ -97,11 +114,12 @@ class PaymentViewModel(
         }
     }
 
-    private suspend fun verifyAndCreateOrder(
+    private suspend fun verifyPayment(
         transactionId: String, 
         referenceId: String, 
         signature: String?,
-        amount: Double
+        amount: Double,
+        order: Order?
     ) {
         val verificationRes = paymentRepository.verifyPayment(
             transactionId = transactionId,
@@ -111,31 +129,19 @@ class PaymentViewModel(
         )
 
         if (verificationRes is Resource.Success && verificationRes.data == true) {
-            val orderToCreate = pendingOrderSnapshot?.copy(
-                paymentReference = referenceId,
-                paymentStatus = com.foodfusionai.app.data.models.order.PaymentStatus.SUCCESS,
-                orderStatus = com.foodfusionai.app.data.models.order.OrderStatus.CONFIRMED,
-                totalAmount = amount // Ensuring exact verified amount
-            )
-
-            if (orderToCreate == null) {
-                _uiState.update { it.copy(isProcessing = false, error = "Order snapshot missing.") }
-                return
-            }
-
-            orderRepository.createOrder(orderToCreate).collect { orderRes ->
-                when (orderRes) {
-                    is Resource.Loading -> { /* already processing */ }
-                    is Resource.Success -> {
-                        clearCartAfterSuccess(orderRes.data!!)
-                    }
-                    is Resource.Error -> {
-                        _uiState.update { it.copy(isProcessing = false, error = "Order creation failed: ${orderRes.message}") }
-                    }
-                    is Resource.Empty -> {
-                        _uiState.update { it.copy(isProcessing = false, error = "Empty order response") }
-                    }
-                }
+            // The Cloud Function verified payment AND updated Firestore status to CONFIRMED.
+            // We just clear the cart and finish.
+            if (order != null) {
+                val completedOrder = order.copy(
+                    orderId = referenceId,
+                    paymentStatus = com.foodfusionai.app.data.models.order.PaymentStatus.SUCCESS,
+                    orderStatus = com.foodfusionai.app.data.models.order.OrderStatus.CONFIRMED,
+                    paymentReference = transactionId,
+                    totalAmount = amount
+                )
+                clearCartAfterSuccess(completedOrder)
+            } else {
+                _uiState.update { it.copy(isProcessing = false, error = "Order reference lost locally, but payment succeeded.") }
             }
         } else {
             _uiState.update { it.copy(isProcessing = false, error = "Payment verification failed or mismatch amount.") }

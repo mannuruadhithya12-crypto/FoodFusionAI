@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, query, orderBy, onSnapshot, doc, updateDoc } from "firebase/firestore";
-import { db } from "../../../lib/firebase";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
+import { db, functions } from "../../../lib/firebase";
 import { Clock, CheckCircle, Truck, Package, XCircle, ClipboardList } from "lucide-react";
 import { Order, OrderItem } from "../../types";
 
@@ -26,10 +27,8 @@ export default function OrdersPage() {
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
-      await updateDoc(doc(db, "orders", orderId), {
-        orderStatus: newStatus,
-        updatedAt: new Date().toISOString()
-      });
+      const updateFn = httpsCallable(functions, "updateOrderStatus");
+      await updateFn({ orderId, newStatus, message: "Updated by Admin" });
     } catch (err) {
       console.error("Failed to update status", err);
       alert("Failed to update status");

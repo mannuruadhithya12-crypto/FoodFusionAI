@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function isAdmin() {
-      return request.auth != null && (request.auth.token.admin == true || exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)));
+      return request.auth != null && request.auth.token.role == 'ADMIN';
     }
 
     function getUserData() {
@@ -11,10 +11,9 @@ service cloud.firestore {
 
     function isPartner() {
       return request.auth != null && 
-        (getUserData().role == 'RESTAURANT_OWNER' || 
-         getUserData().role == 'RESTAURANT_MANAGER' || 
-         getUserData().role == 'RESTAURANT_STAFF') &&
-        getUserData().active == true;
+        (request.auth.token.role == 'RESTAURANT_OWNER' || 
+         request.auth.token.role == 'RESTAURANT_MANAGER' || 
+         request.auth.token.role == 'RESTAURANT_STAFF');
     }
 
     function isPartnerOf(restaurantId) {
@@ -24,7 +23,7 @@ service cloud.firestore {
     // Admin Users collection
     match /adminUsers/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if true; // Temporarily open for bootstrap
+      allow write: if false; // Closed vulnerability
     }
 
     // Users can read their own data
@@ -145,7 +144,7 @@ service cloud.firestore {
     
     // Analytics
     match /analytics/{analyticsId} {
-      allow create: if true; // Depending on requirements, could limit to authenticated users
+      allow create: if request.auth != null; 
       allow read, write: if false;
     }
 

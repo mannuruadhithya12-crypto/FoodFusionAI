@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import PartnerLayout from "@/components/PartnerLayout";
 import { useAuth } from "@/context/AuthContext";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Order } from "@/types";
 import { DollarSign, IndianRupee, ClipboardList, TrendingUp } from "lucide-react";
@@ -17,6 +17,7 @@ export default function EarningsPage() {
   const [grossSales, setGrossSales] = useState(0);
   const [platformCommission, setPlatformCommission] = useState(0);
   const [netEarnings, setNetEarnings] = useState(0);
+  const [commissionRate, setCommissionRate] = useState(0.15); // Default to 15%
 
   useEffect(() => {
     if (!selectedRestaurantId) return;
@@ -49,11 +50,25 @@ export default function EarningsPage() {
 
       setOrders(list);
       setGrossSales(totalSales);
-      // Assume 15% commission
-      const comm = totalSales * 0.15;
-      setPlatformCommission(comm);
-      setNetEarnings(totalSales - comm);
-      setLoading(false);
+      
+      // Fetch dynamic commission rate
+      getDoc(doc(db, "restaurants", selectedRestaurantId)).then(restaurantDoc => {
+        let rate = 0.15;
+        if (restaurantDoc.exists()) {
+           rate = restaurantDoc.data().commission ?? 0.15;
+        }
+        setCommissionRate(rate);
+        const comm = totalSales * rate;
+        setPlatformCommission(comm);
+        setNetEarnings(totalSales - comm);
+        setLoading(false);
+      }).catch(err => {
+        console.error("Failed to fetch commission", err);
+        const comm = totalSales * 0.15;
+        setPlatformCommission(comm);
+        setNetEarnings(totalSales - comm);
+        setLoading(false);
+      });
     });
 
     return unsubscribe;
@@ -87,7 +102,7 @@ export default function EarningsPage() {
               </div>
 
               <div className="glass-card stat-card-red p-6">
-                <p className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2">Platform Fee (15%)</p>
+                <p className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2">Platform Fee ({(commissionRate * 100).toFixed(0)}%)</p>
                 <p className="text-3xl font-black text-slate-100 flex items-center gap-1">
                   <IndianRupee size={24} /> {platformCommission.toLocaleString("en-IN")}
                 </p>
@@ -128,7 +143,7 @@ export default function EarningsPage() {
                     <tbody className="divide-y divide-white/5 text-slate-300">
                       {orders.map((o) => {
                         const date = new Date(o.createdAt?.seconds ? o.createdAt.seconds * 1000 : o.createdAt);
-                        const netPay = o.totalAmount * 0.85;
+                        const netPay = o.totalAmount * (1 - commissionRate);
                         return (
                           <tr key={o.id} className="hover:bg-white/5 transition-colors">
                             <td className="py-3 px-4 font-semibold text-slate-200">

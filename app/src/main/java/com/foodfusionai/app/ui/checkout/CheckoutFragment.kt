@@ -76,11 +76,13 @@ class CheckoutFragment : BaseFragment<FragmentCheckoutBinding>() {
     }
 
     private fun showAddressSelectionDialog() {
-        // Retrieve addresses list from Repository using ViewModel base list or just fetch
-        val addresses = listOf(
-            com.foodfusionai.app.data.models.Address("addr_1", "Home", "123, Park Lane, Indiranagar", "Bangalore"),
-            com.foodfusionai.app.data.models.Address("addr_2", "Work", "Global Tech Park, Outer Ring Road", "Bangalore")
-        )
+        val addresses = viewModel.uiState.value.availableAddresses
+        
+        if (addresses.isEmpty()) {
+            requireContext().showToast("No addresses available. Please add one in your profile.")
+            return
+        }
+        
         val addressOptions = addresses.map { "${it.type}: ${it.street}, ${it.city}" }.toTypedArray()
 
         MaterialAlertDialogBuilder(requireContext())

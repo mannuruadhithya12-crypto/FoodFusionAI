@@ -1,5 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { issueOrderRewards } from "../utils/rewardSystem";
 
 export const verifyDeliveryOtp = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
@@ -112,6 +113,10 @@ export const verifyDeliveryOtp = functions.https.onCall(async (data, context) =>
             // Clean up live location streaming data to preserve driver privacy
             const locationRef = db.collection("deliveryLocations").doc(orderId);
             transaction.delete(locationRef);
+
+            // Issue customer rewards
+            const totalAmount = order.totalAmount || 0;
+            await issueOrderRewards(db, transaction, order.userId, orderId, totalAmount);
 
             return { success: true, message: "Delivery confirmed and earnings registered." };
         });

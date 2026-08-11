@@ -120,10 +120,7 @@ class AuthRepositoryImpl(
     override suspend fun login(email: String, password: String): Resource<User> = withContext(Dispatchers.IO) {
         val auth = firebaseAuth
         if (auth == null) {
-            Log.d(TAG, "Executing fallback login for email: $email")
-            val fallbackUser = createMockUser(email)
-            _fallbackUserFlow.value = fallbackUser
-            return@withContext Resource.Success(fallbackUser)
+            return@withContext Resource.Error("Firebase Auth is uninitialized. Cannot login.")
         }
 
         try {
@@ -131,10 +128,8 @@ class AuthRepositoryImpl(
             val fbUser = result.user ?: return@withContext Resource.Error("Authentication failed: User profile unavailable", null)
             Resource.Success(fbUser.toDomainUser())
         } catch (e: IllegalStateException) {
-            Log.w(TAG, "Firebase call failed with IllegalStateException; falling back to local session", e)
-            val fallbackUser = createMockUser(email)
-            _fallbackUserFlow.value = fallbackUser
-            Resource.Success(fallbackUser)
+            Log.w(TAG, "Firebase call failed with IllegalStateException", e)
+            Resource.Error("Firebase is unavailable. Cannot login.")
         } catch (e: Throwable) {
             mapAuthExceptionToResource(e)
         }
@@ -143,10 +138,7 @@ class AuthRepositoryImpl(
     override suspend fun register(name: String, email: String, phone: String, password: String): Resource<User> = withContext(Dispatchers.IO) {
         val auth = firebaseAuth
         if (auth == null) {
-            Log.d(TAG, "Executing fallback registration for email: $email, name: $name, phone: $phone")
-            val fallbackUser = createMockUser(email, name, phone)
-            _fallbackUserFlow.value = fallbackUser
-            return@withContext Resource.Success(fallbackUser)
+            return@withContext Resource.Error("Firebase Auth is uninitialized. Cannot register.")
         }
 
         try {
@@ -182,10 +174,8 @@ class AuthRepositoryImpl(
 
             Resource.Success(user)
         } catch (e: IllegalStateException) {
-            Log.w(TAG, "Firebase call failed with IllegalStateException; falling back to local session", e)
-            val fallbackUser = createMockUser(email, name, phone)
-            _fallbackUserFlow.value = fallbackUser
-            Resource.Success(fallbackUser)
+            Log.w(TAG, "Firebase call failed with IllegalStateException", e)
+            Resource.Error("Firebase is unavailable. Cannot register.")
         } catch (e: Throwable) {
             mapAuthExceptionToResource(e)
         }
@@ -194,8 +184,7 @@ class AuthRepositoryImpl(
     override suspend fun sendPasswordResetEmail(email: String): Resource<Unit> = withContext(Dispatchers.IO) {
         val auth = firebaseAuth
         if (auth == null) {
-            Log.d(TAG, "Executing fallback password reset for email: $email")
-            return@withContext Resource.Success(Unit)
+            return@withContext Resource.Error("Firebase Auth is uninitialized.")
         }
 
         try {
@@ -248,27 +237,7 @@ class AuthRepositoryImpl(
         )
     }
 
-    /**
-     * Generates a mock [User] for fallback session operations when Firebase is unavailable.
-     */
-    private fun createMockUser(email: String, displayName: String? = null, phone: String? = null): User {
-        val name = if (!displayName.isNullOrBlank()) {
-            displayName
-        } else {
-            email.takeIf { it.isNotBlank() }
-                ?.substringBefore("@")
-                ?.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-                ?: "User"
-        }
-        return User(
-            uid = "mock_user_${UUID.randomUUID()}",
-            email = email,
-            displayName = name,
-            phoneNumber = phone ?: "",
-            photoUrl = null,
-            createdAt = System.currentTimeMillis()
-        )
-    }
+
 
     /**
      * Centralized mapper converting Firebase and general exceptions to user-friendly [Resource.Error] messages.

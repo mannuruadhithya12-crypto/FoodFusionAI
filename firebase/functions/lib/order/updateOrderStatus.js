@@ -37,13 +37,17 @@ exports.updateOrderStatus = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const orderStateMachine_1 = require("./orderStateMachine");
+const rewardSystem_1 = require("../utils/rewardSystem");
 exports.updateOrderStatus = functions.https.onCall(async (data, context) => {
     // 1. Authenticate user
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "User must be logged in to update order status.");
     }
-    // In a real application, you would verify if the user has 'ADMIN' or 'RESTAURANT' role here.
-    // For this implementation, we will allow it but in production you MUST verify roles.
+    // Role Verification
+    const role = context.auth.token.role;
+    if (role !== 'ADMIN' && role !== 'RESTAURANT_OWNER' && role !== 'RESTAURANT_MANAGER' && role !== 'RESTAURANT_STAFF') {
+        throw new functions.https.HttpsError("permission-denied", "Unauthorized. Only Admins or Partners can update order status.");
+    }
     const uid = context.auth.uid;
     const orderId = data.orderId;
     const newStatus = data.newStatus;
@@ -55,12 +59,20 @@ exports.updateOrderStatus = functions.https.onCall(async (data, context) => {
     const orderRef = db.collection("orders").doc(orderId);
     try {
         await db.runTransaction(async (transaction) => {
+            var _a;
             const orderDoc = await transaction.get(orderRef);
             if (!orderDoc.exists) {
                 throw new functions.https.HttpsError("not-found", "Order not found.");
             }
             const orderData = orderDoc.data();
             const currentStatus = orderData === null || orderData === void 0 ? void 0 : orderData.orderStatus;
+            if (role !== 'ADMIN') {
+                const userDoc = await transaction.get(db.collection("users").doc(uid));
+                const restaurantIds = ((_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.restaurantIds) || [];
+                if (!restaurantIds.includes(orderData === null || orderData === void 0 ? void 0 : orderData.restaurantId)) {
+                    throw new functions.https.HttpsError("permission-denied", "You can only update orders for your own restaurants.");
+                }
+            }
             // 2. State Validation
             if (!(0, orderStateMachine_1.canTransition)(currentStatus, newStatus)) {
                 throw new functions.https.HttpsError("failed-precondition", `Invalid transition from ${currentStatus} to ${newStatus}`);
@@ -86,6 +98,10 @@ exports.updateOrderStatus = functions.https.onCall(async (data, context) => {
             }
             // 3. Perform Update
             transaction.update(orderRef, updateData);
+            if (newStatus === orderStateMachine_1.OrderStatus.DELIVERED) {
+                const totalAmount = (orderData === null || orderData === void 0 ? void 0 : orderData.totalAmount) || 0;
+                await (0, rewardSystem_1.issueOrderRewards)(db, transaction, orderData === null || orderData === void 0 ? void 0 : orderData.userId, orderId, totalAmount);
+            }
         });
         return { success: true, message: `Order status updated to ${newStatus}` };
     }

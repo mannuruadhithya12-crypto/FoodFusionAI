@@ -1,6 +1,7 @@
 import * as functions from "firebase-functions";
 import * as crypto from "crypto";
 import { getRazorpayClient, getRazorpaySecret } from "./razorpayClient";
+import * as admin from "firebase-admin";
 
 export const verifyRazorpayPayment = functions.https.onCall(async (data, context) => {
     // 1. Authenticate user
@@ -49,7 +50,33 @@ export const verifyRazorpayPayment = functions.https.onCall(async (data, context
             throw new functions.https.HttpsError("failed-precondition", "Payment is not captured yet.");
         }
 
-        // Optional: Could verify amount matches the internal checkoutReference expectation if stored in DB.
+        // 5. Update Firestore Order Status
+        const db = admin.firestore();
+        const orderRef = db.collection("orders").doc(trustedOrderId);
+        
+        await db.runTransaction(async (transaction) => {
+            const orderDoc = await transaction.get(orderRef);
+            if (!orderDoc.exists) {
+                throw new functions.https.HttpsError("not-found", "Order not found in database.");
+            }
+            
+            // Only update if not already success
+            if (orderDoc.data()?.paymentStatus !== "SUCCESS") {
+                transaction.update(orderRef, {
+                    paymentStatus: "SUCCESS",
+                    orderStatus: "CONFIRMED",
+                    paymentReference: paymentId,
+                    updatedAt: Date.now(),
+                    statusHistory: admin.firestore.FieldValue.arrayUnion({
+                        status: "CONFIRMED",
+                        previousStatus: "PENDING_PAYMENT",
+                        timestamp: Date.now(),
+                        updatedBy: "SYSTEM",
+                        message: "Payment verified successfully"
+                    })
+                });
+            }
+        });
         
         // Return successful verification
         return {

@@ -6,6 +6,7 @@ import com.foodfusionai.app.data.models.Coupon
 
 data class CheckoutUiState(
     val cartItems: List<CartEntity> = emptyList(),
+    val availableAddresses: List<Address> = emptyList(),
     val selectedAddress: Address? = null,
     val couponCode: String = "",
     val appliedCoupon: Coupon? = null,

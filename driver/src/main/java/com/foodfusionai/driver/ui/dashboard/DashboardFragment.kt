@@ -65,11 +65,16 @@ class DashboardFragment : Fragment() {
                     onSuccess = { driver ->
                         binding.tvGreeting.text = "Hello, ${driver.name}"
                         
-                        // Prevent infinite loop by disabling listener trigger
                         isUpdatingStatus = true
                         binding.switchStatus.isChecked = driver.availability == "ONLINE" || driver.availability == "BUSY"
                         binding.switchStatus.text = if (driver.availability == "OFFLINE") "OFFLINE" else driver.availability
                         isUpdatingStatus = false
+
+                        if (driver.availability == "ONLINE" || driver.availability == "BUSY") {
+                            com.foodfusionai.driver.services.LocationTrackingService.start(requireContext(), uid)
+                        } else {
+                            com.foodfusionai.driver.services.LocationTrackingService.stop(requireContext())
+                        }
 
                         // If suspended, navigate away
                         if (driver.status == "SUSPENDED") {
@@ -91,6 +96,13 @@ class DashboardFragment : Fragment() {
             
             lifecycleScope.launch {
                 repository.updateDriverAvailability(uid, newStatus).collect { result ->
+                    result.onSuccess {
+                        if (isChecked) {
+                            com.foodfusionai.driver.services.LocationTrackingService.start(requireContext(), uid)
+                        } else {
+                            com.foodfusionai.driver.services.LocationTrackingService.stop(requireContext())
+                        }
+                    }
                     result.onFailure {
                         Toast.makeText(context, "Failed to toggle status", Toast.LENGTH_SHORT).show()
                     }

@@ -112,7 +112,7 @@ class ActiveDeliveryFragment : Fragment() {
                 // Start location streaming foreground service if not already started
                 val uid = FirebaseAuth.getInstance().currentUser?.uid
                 if (uid != null) {
-                    LocationTrackingService.start(requireContext(), order.orderId, uid)
+                    LocationTrackingService.start(requireContext(), uid, order.orderId)
                 }
 
                 if (!isArrivedAtCustomer) {
@@ -131,17 +131,19 @@ class ActiveDeliveryFragment : Fragment() {
 
     private fun setupListeners() {
         binding.btnNavigateRestaurant.setOnClickListener {
-            // Re-route navigation
-            val lat = 12.9716 // Simulated restaurant coordinates or query from restaurant model
-            val lng = 77.5946
-            openGoogleMapsNavigation(lat, lng)
+            val order = currentOrder ?: return@setOnClickListener
+            // Try to navigate using restaurant name and address (or just name if address is empty)
+            openGoogleMapsNavigation("${order.restaurantName}")
         }
 
         binding.btnNavigateCustomer.setOnClickListener {
-            // Simulated customer coordinates
-            val lat = 12.9352
-            val lng = 77.6245
-            openGoogleMapsNavigation(lat, lng)
+            val order = currentOrder ?: return@setOnClickListener
+            val snapshot = order.addressSnapshot
+            if (snapshot != null) {
+                openGoogleMapsNavigation("${snapshot.street}, ${snapshot.city}, ${snapshot.state}")
+            } else {
+                Toast.makeText(context, "Customer address not available", Toast.LENGTH_SHORT).show()
+            }
         }
 
         binding.btnAction.setOnClickListener {
@@ -211,8 +213,9 @@ class ActiveDeliveryFragment : Fragment() {
         }
     }
 
-    private fun openGoogleMapsNavigation(lat: Double, lng: Double) {
-        val gmmIntentUri = Uri.parse("google.navigation:q=$lat,$lng")
+    private fun openGoogleMapsNavigation(query: String) {
+        val encodedQuery = Uri.encode(query)
+        val gmmIntentUri = Uri.parse("google.navigation:q=$encodedQuery")
         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
             setPackage("com.google.android.apps.maps")
         }

@@ -8,7 +8,8 @@ data class PaymentRequest(
     val paymentMethod: PaymentMethod,
     val referenceId: String,
     val couponId: String? = null,
-    val cartTotal: Double? = null
+    val cartTotal: Double? = null,
+    val checkoutReference: String? = null
 )
 
 sealed class PaymentAction {

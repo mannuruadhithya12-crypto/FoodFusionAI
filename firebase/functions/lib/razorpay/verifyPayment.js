@@ -37,6 +37,7 @@ exports.verifyRazorpayPayment = void 0;
 const functions = __importStar(require("firebase-functions"));
 const crypto = __importStar(require("crypto"));
 const razorpayClient_1 = require("./razorpayClient");
+const admin = __importStar(require("firebase-admin"));
 exports.verifyRazorpayPayment = functions.https.onCall(async (data, context) => {
     // 1. Authenticate user
     if (!context.auth) {
@@ -73,7 +74,32 @@ exports.verifyRazorpayPayment = functions.https.onCall(async (data, context) => 
             console.error("Payment status is not captured. Current status:", payment.status);
             throw new functions.https.HttpsError("failed-precondition", "Payment is not captured yet.");
         }
-        // Optional: Could verify amount matches the internal checkoutReference expectation if stored in DB.
+        // 5. Update Firestore Order Status
+        const db = admin.firestore();
+        const orderRef = db.collection("orders").doc(trustedOrderId);
+        await db.runTransaction(async (transaction) => {
+            var _a;
+            const orderDoc = await transaction.get(orderRef);
+            if (!orderDoc.exists) {
+                throw new functions.https.HttpsError("not-found", "Order not found in database.");
+            }
+            // Only update if not already success
+            if (((_a = orderDoc.data()) === null || _a === void 0 ? void 0 : _a.paymentStatus) !== "SUCCESS") {
+                transaction.update(orderRef, {
+                    paymentStatus: "SUCCESS",
+                    orderStatus: "CONFIRMED",
+                    paymentReference: paymentId,
+                    updatedAt: Date.now(),
+                    statusHistory: admin.firestore.FieldValue.arrayUnion({
+                        status: "CONFIRMED",
+                        previousStatus: "PENDING_PAYMENT",
+                        timestamp: Date.now(),
+                        updatedBy: "SYSTEM",
+                        message: "Payment verified successfully"
+                    })
+                });
+            }
+        });
         // Return successful verification
         return {
             verified: true,

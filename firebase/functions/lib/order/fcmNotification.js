@@ -126,18 +126,7 @@ exports.onOrderStatusUpdated = functions.firestore
                     status: afterStatus
                 }
             });
-            // --- REWARDS LOGIC ---
-            if (afterStatus === "DELIVERED") {
-                const totalAmount = afterData.totalAmount || 0;
-                const earnedPoints = Math.floor(totalAmount / 100);
-                if (earnedPoints > 0) {
-                    const userRef = db.collection("users").doc(userId);
-                    transaction.update(userRef, {
-                        rewardBalance: admin.firestore.FieldValue.increment(earnedPoints)
-                    });
-                    console.log(`Issued ${earnedPoints} reward points to user ${userId} for order ${orderId}`);
-                }
-            }
+            // Rewards logic has been moved to verifyDeliveryOtp / status update transactions
         });
     }
     catch (error) {

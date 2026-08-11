@@ -54,8 +54,10 @@ class CheckoutViewModel(
                     // or if the currently selected address was deleted.
                     val currentSelected = _uiState.value.selectedAddress
                     if (currentSelected == null || addresses.none { it.id == currentSelected.id }) {
-                        _uiState.update { it.copy(selectedAddress = defaultAddress) }
+                        _uiState.update { it.copy(availableAddresses = addresses, selectedAddress = defaultAddress) }
                         recalculateTotals()
+                    } else {
+                        _uiState.update { it.copy(availableAddresses = addresses) }
                     }
                 }
             }
